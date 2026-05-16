@@ -1,0 +1,3 @@
+﻿namespace Agrosvet.Api.Models;
+
+public record Category(int Id, string Name, string Description);
