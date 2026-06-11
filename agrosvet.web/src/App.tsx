@@ -1,5 +1,5 @@
 ﻿import React, { useState } from 'react';
-import { ShoppingCart, Sprout, Search, User, Facebook, Instagram, MapPin, ArrowUpDown, ChevronDown } from 'lucide-react';
+import { ShoppingCart, Sprout, Search, User, Facebook, Instagram, MapPin, ArrowUpDown, ChevronDown, Filter } from 'lucide-react';
 import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
 import { ProductCard } from './components/ProductCard';
 import { Sidebar } from './components/Sidebar';
@@ -21,6 +21,7 @@ const MainShop: React.FC<{
   const [searchQuery, setSearchQuery] = useState('');
   const [priceRange, setPriceRange] = useState<[number, number]>([0, 10000]);
   const [sortOption, setSortOption] = useState<SortOption>('default');
+  const [filtersOpen, setFiltersOpen] = useState(false);
 
   const filteredProducts = products
     .filter(p => !activeCategoryId || p.categoryId === activeCategoryId)
@@ -38,21 +39,22 @@ const MainShop: React.FC<{
 
   return (
     <>
-      <div className="max-w-xl mx-auto hidden md:block">
+      <div className="max-w-xl mx-auto">
         <div className="relative group">
           <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-agro-600 transition-colors" size={18} />
           <input 
             type="text"
             placeholder="Pretraži ponudu semena, đubriva, alata..."
-            className="surface-card w-full py-3 pl-12 pr-6 rounded-2xl focus:outline-none focus:ring-4 focus:ring-agro-500/10 focus:border-agro-200 transition-all text-sm font-medium"
+            className="surface-card w-full py-2.5 sm:py-3 pl-12 pr-6 rounded-2xl focus:outline-none focus:ring-4 focus:ring-agro-500/10 focus:border-agro-200 transition-all text-sm font-medium"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
           />
         </div>
       </div>
 
-      <div className="container mx-auto px-6 py-12 flex gap-12 flex-1 items-start">
+      <div className="py-5 md:py-12 flex flex-col lg:flex-row gap-6 lg:gap-12 flex-1 items-stretch lg:items-start">
         <Sidebar 
+          className="hidden lg:flex"
           categories={categories}
           activeCategoryId={activeCategoryId}
           onCategorySelect={setActiveCategoryId}
@@ -62,11 +64,10 @@ const MainShop: React.FC<{
           onPriceRangeChange={setPriceRange}
         />
 
-        <div className="flex-1">
-          <header className="mb-10 flex flex-col md:flex-row md:items-end justify-between gap-6">
+        <div className="flex-1 min-w-0">
+          <header className="mb-5 md:mb-10 flex items-end justify-between gap-3 md:gap-6">
             <div>
-              <div className="text-xs font-black text-agro-600 uppercase tracking-[0.2em] mb-2 opacity-80">Online Prodavnica</div>
-              <h2 className="text-4xl font-black text-gray-900 tracking-tight">
+              <h2 className="text-2xl md:text-4xl font-black text-gray-900 tracking-tight">
                 {activeCategoryId 
                   ? categories.find(c => c.id === activeCategoryId)?.name 
                   : searchQuery 
@@ -75,9 +76,18 @@ const MainShop: React.FC<{
               </h2>
             </div>
             
-            <div className="flex items-center gap-6">
-              <div className="relative inline-block">
-                <div className="flex items-center gap-2 text-xs font-black text-gray-400 uppercase tracking-widest mb-1.5 ml-1">
+            <div className="flex shrink-0 items-end gap-2 sm:gap-6">
+              <button
+                onClick={() => setFiltersOpen(open => !open)}
+                className="surface-card flex h-11 w-11 items-center justify-center rounded-xl text-gray-500 transition-all hover:text-agro-600 lg:hidden"
+                aria-label="Prikaži filtere"
+                aria-expanded={filtersOpen}
+              >
+                <Filter size={16} />
+              </button>
+
+              <div className="relative h-11 w-11 sm:h-auto sm:w-auto">
+                <div className="hidden sm:flex items-center gap-2 text-xs font-black text-gray-400 uppercase tracking-widest mb-1.5 ml-1">
                   <ArrowUpDown size={12} />
                   <span>Sortiraj po</span>
                 </div>
@@ -85,7 +95,8 @@ const MainShop: React.FC<{
                   <select 
                     value={sortOption}
                     onChange={(e) => setSortOption(e.target.value as SortOption)}
-                    className="appearance-none bg-white border border-gray-100 pl-4 pr-10 py-2.5 rounded-xl text-xs font-bold text-gray-700 focus:outline-none focus:ring-4 focus:ring-agro-500/10 focus:border-agro-200 transition-all cursor-pointer shadow-sm"
+                    aria-label="Sortiraj proizvode"
+                    className="h-11 w-11 appearance-none bg-white border border-gray-100 p-0 rounded-xl text-xs font-bold text-transparent sm:w-full sm:pl-4 sm:pr-10 sm:py-2.5 sm:text-gray-700 focus:outline-none focus:ring-4 focus:ring-agro-500/10 focus:border-agro-200 transition-all cursor-pointer shadow-sm"
                   >
                     <option value="default">Preporučeno</option>
                     <option value="price-asc">Ceni: Niža ka višoj</option>
@@ -93,15 +104,43 @@ const MainShop: React.FC<{
                     <option value="name-asc">Nazivu: A - Z</option>
                     <option value="name-desc">Nazivu: Z - A</option>
                   </select>
-                  <ChevronDown size={14} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
+                  <ArrowUpDown size={14} className="sm:hidden absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 text-gray-500 pointer-events-none" />
+                  <ChevronDown size={14} className="hidden sm:block absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
                 </div>
               </div>
 
-              <div className="text-sm font-bold text-gray-400 bg-white px-4 py-2.5 rounded-xl border border-gray-100 shadow-sm self-end mb-[1px]">
+              <div className="hidden sm:block text-sm font-bold text-gray-400 bg-white px-4 py-2.5 rounded-xl border border-gray-100 shadow-sm sm:self-end sm:mb-[1px]">
                 Prikazano <span className="text-gray-900">{filteredProducts.length}</span> proizvoda
               </div>
             </div>
           </header>
+
+          <div className="mb-6 lg:hidden">
+            {filtersOpen && (
+              <div className="space-y-4">
+                <Sidebar 
+                  className="lg:hidden"
+                  showCart={false}
+                  categories={categories}
+                  activeCategoryId={activeCategoryId}
+                  onCategorySelect={(id) => {
+                    setActiveCategoryId(id);
+                    setFiltersOpen(false);
+                  }}
+                  cart={cart}
+                  onRemoveFromCart={removeFromCart}
+                  priceRange={priceRange}
+                  onPriceRangeChange={setPriceRange}
+                />
+                <button
+                  onClick={() => setFiltersOpen(false)}
+                  className="w-full rounded-2xl bg-agro-600 px-5 py-3.5 text-sm font-black uppercase tracking-[0.16em] text-white shadow-lg shadow-agro-600/20 transition-all active:scale-[0.98]"
+                >
+                  Prikaži proizvode
+                </button>
+              </div>
+            )}
+          </div>
 
           {filteredProducts.length > 0 ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
@@ -115,7 +154,7 @@ const MainShop: React.FC<{
               ))}
             </div>
           ) : (
-            <div className="bg-white rounded-3xl p-20 text-center shadow-soft border border-dashed border-gray-200">
+            <div className="bg-white rounded-3xl p-10 md:p-20 text-center shadow-soft border border-dashed border-gray-200">
                <Search size={64} className="mx-auto text-gray-200 mb-6" strokeWidth={1} />
                <h3 className="text-xl font-bold text-gray-800 mb-2">Nema rezultata</h3>
                <p className="text-gray-500 max-w-sm mx-auto">Nismo pronašli nijedan proizvod koji odgovara vašoj pretrazi ili opsegu cene. Pokušajte sa drugim ključnim rečima.</p>
@@ -147,14 +186,14 @@ const App: React.FC = () => {
     <Router>
       <div className="min-h-screen bg-[#fafafa] flex flex-col font-sans selection:bg-agro-100 selection:text-agro-900">
         <nav className="bg-white/80 backdrop-blur-md border-b border-gray-100 sticky top-0 z-50">
-          <div className="container mx-auto px-6 py-4 flex justify-between items-center">
-            <Link to="/" className="flex items-center gap-3 group cursor-pointer">
-              <div className="bg-agro-600 p-2 rounded-xl group-hover:rotate-12 transition-transform duration-300">
-                <Sprout size={28} className="text-white" />
+          <div className="container mx-auto px-4 sm:px-6 py-3 sm:py-4 flex justify-between items-center gap-3">
+            <Link to="/" className="flex min-w-0 items-center gap-2 sm:gap-3 group cursor-pointer">
+              <div className="bg-agro-600 p-2 rounded-xl group-hover:rotate-12 transition-transform duration-300 shrink-0">
+                <Sprout size={24} className="text-white sm:w-7 sm:h-7" />
               </div>
-              <div>
-                <h1 className="text-xl font-black text-gray-900 tracking-tighter">Agrosvet</h1>
-                <div className="text-[9px] font-bold text-agro-600 uppercase tracking-widest -mt-1 opacity-80">Poljoprivredna Apoteka</div>
+              <div className="min-w-0">
+                <h1 className="text-lg sm:text-xl font-black text-gray-900 tracking-tighter">Agrosvet</h1>
+                <div className="hidden sm:block text-[9px] font-bold text-agro-600 uppercase tracking-widest -mt-1 opacity-80 truncate">Poljoprivredna Apoteka</div>
               </div>
             </Link>
 
@@ -162,8 +201,8 @@ const App: React.FC = () => {
               <Route path="/" element={<div className="contents" />} />
             </Routes>
 
-            <div className="ml-auto flex items-center gap-2 sm:gap-4">
-              <button className="p-3 text-gray-500 hover:text-agro-600 hover:bg-agro-50 rounded-xl transition-all"><User size={20} /></button>
+            <div className="ml-auto flex shrink-0 items-center gap-1.5 sm:gap-4">
+              <button className="p-2.5 sm:p-3 text-gray-500 hover:text-agro-600 hover:bg-agro-50 rounded-xl transition-all"><User size={20} /></button>
               <div className="hidden sm:block h-8 w-[1px] bg-gray-100 mx-2" />
               <div className="flex items-center gap-2 sm:gap-3 bg-earth-950 text-white px-3 sm:px-5 py-2.5 rounded-2xl shadow-lg shadow-earth-900/20 hover:scale-105 active:scale-95 transition-all cursor-pointer">
                 <ShoppingCart size={20} className="text-earth-400" />
@@ -178,8 +217,8 @@ const App: React.FC = () => {
           </div>
         </nav>
 
-        <main className="flex-1 py-12">
-          <div className="container mx-auto px-6">
+        <main className="flex-1 py-8 md:py-12">
+          <div className="container mx-auto px-4 sm:px-6">
             <Routes>
               <Route path="/" element={
                 <MainShop 
