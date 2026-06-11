@@ -25,9 +25,14 @@ export const Sidebar: React.FC<SidebarProps> = ({
   priceRange,
   onPriceRangeChange
 }) => {
+  const minLimit = 0;
+  const maxLimit = 10000;
+
   // Local state to handle input values as strings to allow empty fields and avoid leading zero issues
   const [minPrice, setMinPrice] = useState(priceRange[0].toString());
   const [maxPrice, setMaxPrice] = useState(priceRange[1].toString());
+  const minPercent = ((priceRange[0] - minLimit) / (maxLimit - minLimit)) * 100;
+  const maxPercent = ((priceRange[1] - minLimit) / (maxLimit - minLimit)) * 100;
 
   // Update local state when parent state changes (e.g., reset filters)
   useEffect(() => {
@@ -39,15 +44,25 @@ export const Sidebar: React.FC<SidebarProps> = ({
     // Only allow digits
     const cleanValue = value.replace(/\D/g, '');
     setMinPrice(cleanValue);
-    const numericValue = cleanValue === '' ? 0 : parseInt(cleanValue);
-    onPriceRangeChange([numericValue, priceRange[1]]);
+    const numericValue = cleanValue === '' ? minLimit : parseInt(cleanValue);
+    onPriceRangeChange([Math.min(Math.max(numericValue, minLimit), priceRange[1]), priceRange[1]]);
   };
 
   const handleMaxChange = (value: string) => {
     // Only allow digits
     const cleanValue = value.replace(/\D/g, '');
     setMaxPrice(cleanValue);
-    const numericValue = cleanValue === '' ? 0 : parseInt(cleanValue);
+    const numericValue = cleanValue === '' ? priceRange[0] : parseInt(cleanValue);
+    onPriceRangeChange([priceRange[0], Math.max(Math.min(numericValue, maxLimit), priceRange[0])]);
+  };
+
+  const handleMinSliderChange = (value: string) => {
+    const numericValue = Math.min(parseInt(value), priceRange[1]);
+    onPriceRangeChange([numericValue, priceRange[1]]);
+  };
+
+  const handleMaxSliderChange = (value: string) => {
+    const numericValue = Math.max(parseInt(value), priceRange[0]);
     onPriceRangeChange([priceRange[0], numericValue]);
   };
 
@@ -113,15 +128,33 @@ export const Sidebar: React.FC<SidebarProps> = ({
               />
             </div>
           </div>
-          <input 
-            type="range" 
-            min="0" 
-            max="10000" 
-            step="100"
-            value={priceRange[1]}
-            onChange={(e) => handleMaxChange(e.target.value)}
-            className="w-full accent-agro-600 h-1.5 bg-gray-100 rounded-lg appearance-none cursor-pointer"
-          />
+          <div className="relative h-6">
+            <div className="absolute left-0 right-0 top-1/2 h-1.5 -translate-y-1/2 rounded-full bg-gray-100" />
+            <div 
+              className="absolute top-1/2 h-1.5 -translate-y-1/2 rounded-full bg-agro-600"
+              style={{ left: `${minPercent}%`, right: `${100 - maxPercent}%` }}
+            />
+            <input 
+              type="range" 
+              min={minLimit}
+              max={maxLimit}
+              step="100"
+              value={priceRange[0]}
+              onChange={(e) => handleMinSliderChange(e.target.value)}
+              className="range-control pointer-events-none absolute inset-x-0 top-1/2 h-1.5 -translate-y-1/2 appearance-none bg-transparent accent-agro-600 [&::-webkit-slider-thumb]:pointer-events-auto [&::-webkit-slider-thumb]:relative [&::-webkit-slider-thumb]:z-20 [&::-moz-range-thumb]:pointer-events-auto"
+              aria-label="Minimalna cena"
+            />
+            <input 
+              type="range" 
+              min={minLimit}
+              max={maxLimit}
+              step="100"
+              value={priceRange[1]}
+              onChange={(e) => handleMaxSliderChange(e.target.value)}
+              className="range-control pointer-events-none absolute inset-x-0 top-1/2 h-1.5 -translate-y-1/2 appearance-none bg-transparent accent-agro-600 [&::-webkit-slider-thumb]:pointer-events-auto [&::-webkit-slider-thumb]:relative [&::-webkit-slider-thumb]:z-30 [&::-moz-range-thumb]:pointer-events-auto"
+              aria-label="Maksimalna cena"
+            />
+          </div>
           <div className="flex justify-between text-[10px] font-black text-gray-400 uppercase tracking-widest px-1">
             <span>0 RSD</span>
             <span>10,000+ RSD</span>
