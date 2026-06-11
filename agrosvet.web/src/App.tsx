@@ -51,21 +51,6 @@ const MainShop: React.FC<{
         </div>
       </div>
 
-      <div className="flex items-center gap-4">
-        <button className="p-3 text-gray-400 hover:text-agro-600 hover:bg-agro-50 rounded-xl transition-all"><Bell size={20} /></button>
-        <button className="p-3 text-gray-400 hover:text-agro-600 hover:bg-agro-50 rounded-xl transition-all"><User size={20} /></button>
-        <div className="h-8 w-[1px] bg-gray-100 mx-2" />
-        <div className="flex items-center gap-3 bg-earth-950 text-white px-5 py-2.5 rounded-2xl shadow-lg shadow-earth-900/20 hover:scale-105 active:scale-95 transition-all cursor-pointer">
-          <ShoppingCart size={20} className="text-earth-400" />
-          <span className="font-black text-sm tracking-tight">{cart?.totalPrice.toLocaleString('sr-RS')} <small className="font-normal opacity-60">RSD</small></span>
-          {cart && cart.items.length > 0 && (
-            <div className="bg-agro-500 text-white text-[10px] w-5 h-5 rounded-lg flex items-center justify-center font-black border-2 border-earth-950 -ml-1">
-              {cart.items.length}
-            </div>
-          )}
-        </div>
-      </div>
-
       <div className="container mx-auto px-6 py-12 flex gap-12 flex-1 items-start">
         <Sidebar 
           categories={categories}
@@ -176,6 +161,21 @@ const App: React.FC = () => {
             <Routes>
               <Route path="/" element={<div className="contents" />} />
             </Routes>
+
+            <div className="ml-auto flex items-center gap-2 sm:gap-4">
+              <button className="p-3 text-gray-400 hover:text-agro-600 hover:bg-agro-50 rounded-xl transition-all"><Bell size={20} /></button>
+              <button className="p-3 text-gray-400 hover:text-agro-600 hover:bg-agro-50 rounded-xl transition-all"><User size={20} /></button>
+              <div className="hidden sm:block h-8 w-[1px] bg-gray-100 mx-2" />
+              <div className="flex items-center gap-2 sm:gap-3 bg-earth-950 text-white px-3 sm:px-5 py-2.5 rounded-2xl shadow-lg shadow-earth-900/20 hover:scale-105 active:scale-95 transition-all cursor-pointer">
+                <ShoppingCart size={20} className="text-earth-400" />
+                <span className="hidden sm:inline font-black text-sm tracking-tight">{cart?.totalPrice.toLocaleString('sr-RS')} <small className="font-normal opacity-60">RSD</small></span>
+                {cart && cart.items.length > 0 && (
+                  <div className="bg-agro-500 text-white text-[10px] w-5 h-5 rounded-lg flex items-center justify-center font-black border-2 border-earth-950 -ml-1">
+                    {cart.items.length}
+                  </div>
+                )}
+              </div>
+            </div>
           </div>
         </nav>
 
