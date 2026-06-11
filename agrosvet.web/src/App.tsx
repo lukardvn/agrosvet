@@ -38,13 +38,13 @@ const MainShop: React.FC<{
 
   return (
     <>
-      <div className="flex-1 max-w-xl mx-12 hidden md:block">
+      <div className="max-w-xl mx-auto hidden md:block">
         <div className="relative group">
           <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-agro-600 transition-colors" size={18} />
           <input 
             type="text"
             placeholder="Pretraži ponudu semena, đubriva, alata..."
-            className="w-full bg-gray-50 border border-gray-100/50 py-3 pl-12 pr-6 rounded-2xl focus:outline-none focus:ring-4 focus:ring-agro-500/10 focus:bg-white focus:border-agro-200 transition-all text-sm font-medium"
+            className="surface-card w-full py-3 pl-12 pr-6 rounded-2xl focus:outline-none focus:ring-4 focus:ring-agro-500/10 focus:border-agro-200 transition-all text-sm font-medium"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
           />

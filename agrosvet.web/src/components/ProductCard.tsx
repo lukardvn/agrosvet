@@ -9,7 +9,7 @@ interface ProductCardProps {
 }
 
 export const ProductCard: React.FC<ProductCardProps> = ({ product, categoryName, onAddToCart }) => (
-  <div className="bg-white rounded-2xl shadow-soft border border-gray-100/50 overflow-hidden hover:shadow-hover hover:-translate-y-1 transition-all duration-300 group">
+  <div className="surface-card rounded-2xl overflow-hidden hover:shadow-hover hover:-translate-y-1 transition-all duration-300 group">
     <div className="h-56 bg-gradient-to-br from-agro-50 to-agro-100 flex items-center justify-center text-agro-300 relative overflow-hidden">
       <Sprout size={100} strokeWidth={0.5} className="group-hover:scale-110 group-hover:rotate-6 transition-transform duration-500 ease-out" />
       <div className="absolute top-4 right-4 bg-white/90 backdrop-blur-sm text-agro-700 text-[10px] font-black uppercase tracking-widest px-2.5 py-1 rounded-full shadow-sm border border-agro-100">

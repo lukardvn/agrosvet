@@ -50,7 +50,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
   return (
     <aside className="w-80 flex flex-col gap-8">
       {/* Categories Section */}
-      <div className="bg-white p-7 rounded-3xl shadow-soft border border-gray-100/50 backdrop-blur-xl transition-all hover:shadow-hover">
+      <div className="surface-card p-7 rounded-3xl backdrop-blur-xl transition-all hover:shadow-hover">
         <div className="flex items-center gap-2.5 mb-6 text-earth-900 font-black text-xs uppercase tracking-[0.2em] opacity-80">
           <Tag size={18} className="text-agro-600" />
           <span>Kategorije</span>
@@ -80,7 +80,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
       </div>
 
       {/* Price Filter Section */}
-      <div className="bg-white p-7 rounded-3xl shadow-soft border border-gray-100/50 backdrop-blur-xl">
+      <div className="surface-card p-7 rounded-3xl backdrop-blur-xl">
         <div className="flex items-center gap-2.5 mb-6 text-earth-900 font-black text-xs uppercase tracking-[0.2em] opacity-80">
           <Coins size={18} className="text-earth-600" />
           <span>Opseg Cene (RSD)</span>
@@ -126,7 +126,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
       </div>
 
       {/* Cart Section */}
-      <div className="bg-white p-7 rounded-3xl shadow-soft border border-gray-100/50 relative overflow-hidden transition-all hover:shadow-hover">
+      <div className="surface-card p-7 rounded-3xl relative overflow-hidden transition-all hover:shadow-hover">
         <div className="flex items-center gap-2.5 mb-6 text-earth-900 font-black text-xs uppercase tracking-[0.2em] opacity-80">
           <ShoppingCart size={18} className="text-earth-600" />
           <span>Vaša Korpa</span>
