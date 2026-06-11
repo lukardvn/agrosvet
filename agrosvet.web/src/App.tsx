@@ -1,5 +1,5 @@
 ﻿import React, { useState } from 'react';
-import { ShoppingCart, Sprout, Search, Bell, User, Facebook, Instagram, MapPin, ArrowUpDown, ChevronDown } from 'lucide-react';
+import { ShoppingCart, Sprout, Search, User, Facebook, Instagram, MapPin, ArrowUpDown, ChevronDown } from 'lucide-react';
 import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
 import { ProductCard } from './components/ProductCard';
 import { Sidebar } from './components/Sidebar';
@@ -163,8 +163,7 @@ const App: React.FC = () => {
             </Routes>
 
             <div className="ml-auto flex items-center gap-2 sm:gap-4">
-              <button className="p-3 text-gray-400 hover:text-agro-600 hover:bg-agro-50 rounded-xl transition-all"><Bell size={20} /></button>
-              <button className="p-3 text-gray-400 hover:text-agro-600 hover:bg-agro-50 rounded-xl transition-all"><User size={20} /></button>
+              <button className="p-3 text-gray-500 hover:text-agro-600 hover:bg-agro-50 rounded-xl transition-all"><User size={20} /></button>
               <div className="hidden sm:block h-8 w-[1px] bg-gray-100 mx-2" />
               <div className="flex items-center gap-2 sm:gap-3 bg-earth-950 text-white px-3 sm:px-5 py-2.5 rounded-2xl shadow-lg shadow-earth-900/20 hover:scale-105 active:scale-95 transition-all cursor-pointer">
                 <ShoppingCart size={20} className="text-earth-400" />
