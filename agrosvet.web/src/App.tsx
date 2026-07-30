@@ -1,6 +1,6 @@
 ﻿import React, { useState } from 'react';
 import { ShoppingCart, Sprout, Search, User, Facebook, Instagram, MapPin, ArrowUpDown, ChevronDown, Filter } from 'lucide-react';
-import { BrowserRouter as Router, Routes, Route, Link, Navigate } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Link, Navigate, useLocation } from 'react-router-dom';
 import { ProductCard } from './components/ProductCard';
 import { Sidebar } from './components/Sidebar';
 import { useAgroApi } from './hooks/useAgroApi';
@@ -20,10 +20,11 @@ const MainShop: React.FC<{
   categories: any[], 
   cart: any, 
   addToCart: (id: number) => void, 
-  removeFromCart: (id: number) => void 
-}> = ({ products, categories, cart, addToCart, removeFromCart }) => {
+  removeFromCart: (id: number) => void,
+  searchQuery: string,
+  onSearchQueryChange: (query: string) => void
+}> = ({ products, categories, cart, addToCart, removeFromCart, searchQuery, onSearchQueryChange }) => {
   const [activeCategoryId, setActiveCategoryId] = useState<number | null>(null);
-  const [searchQuery, setSearchQuery] = useState('');
   const [priceRange, setPriceRange] = useState<[number, number]>([0, 10000]);
   const [sortOption, setSortOption] = useState<SortOption>('default');
   const [filtersOpen, setFiltersOpen] = useState(false);
@@ -44,20 +45,7 @@ const MainShop: React.FC<{
 
   return (
     <>
-      <div className="max-w-xl mx-auto">
-        <div className="relative group">
-          <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-agro-600 transition-colors" size={18} />
-          <input 
-            type="text"
-            placeholder="Pretraži ponudu semena, đubriva, alata..."
-            className="surface-card w-full py-2.5 sm:py-3 pl-12 pr-6 rounded-2xl focus:outline-none focus:ring-4 focus:ring-agro-500/10 focus:border-agro-200 transition-all text-sm font-medium"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-          />
-        </div>
-      </div>
-
-      <div className="py-5 md:py-12 flex flex-col lg:flex-row gap-6 lg:gap-12 flex-1 items-stretch lg:items-start">
+      <div className="flex flex-1 flex-col items-stretch gap-5 pb-5 md:pb-10 lg:flex-row lg:items-start lg:gap-7">
         <Sidebar 
           className="hidden lg:flex"
           categories={categories}
@@ -164,7 +152,7 @@ const MainShop: React.FC<{
                <h3 className="text-xl font-bold text-gray-800 mb-2">Nema rezultata</h3>
                <p className="text-gray-500 max-w-sm mx-auto">Nismo pronašli nijedan proizvod koji odgovara vašoj pretrazi ili opsegu cene. Pokušajte sa drugim ključnim rečima.</p>
                <button 
-                onClick={() => {setSearchQuery(''); setActiveCategoryId(null); setPriceRange([0, 10000]); setSortOption('default');}}
+                 onClick={() => {onSearchQueryChange(''); setActiveCategoryId(null); setPriceRange([0, 10000]); setSortOption('default');}}
                 className="mt-8 text-agro-600 font-bold hover:underline"
                >
                  Poništi sve filtere
@@ -179,6 +167,8 @@ const MainShop: React.FC<{
 
 const Storefront: React.FC = () => {
   const { products, categories, cart, loading, addToCart, removeFromCart } = useAgroApi();
+  const location = useLocation();
+  const [searchQuery, setSearchQuery] = useState('');
 
   if (loading) return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-agro-50 text-agro-600 gap-4">
@@ -190,7 +180,7 @@ const Storefront: React.FC = () => {
   return (
     <div className="min-h-screen bg-[#fafafa] flex flex-col font-sans selection:bg-agro-100 selection:text-agro-900">
         <nav className="bg-white/80 backdrop-blur-md border-b border-gray-100 sticky top-0 z-50">
-          <div className="container mx-auto px-4 sm:px-6 py-3 sm:py-4 flex justify-between items-center gap-3">
+          <div className="container relative mx-auto flex flex-wrap items-center justify-between gap-3 px-4 py-3 sm:flex-nowrap sm:px-6 sm:py-4">
             <Link to="/" className="flex min-w-0 items-center gap-2 sm:gap-3 group cursor-pointer">
               <div className="bg-agro-600 p-2 rounded-xl group-hover:rotate-12 transition-transform duration-300 shrink-0">
                 <Sprout size={24} className="text-white sm:w-7 sm:h-7" />
@@ -201,9 +191,18 @@ const Storefront: React.FC = () => {
               </div>
             </Link>
 
-            <Routes>
-              <Route path="/" element={<div className="contents" />} />
-            </Routes>
+            {location.pathname === '/' && (
+              <div className="group relative order-3 w-full sm:order-none sm:mx-4 sm:max-w-xl sm:flex-1 lg:absolute lg:left-1/2 lg:top-1/2 lg:mx-0 lg:w-[min(42vw,36rem)] lg:max-w-none lg:-translate-x-1/2 lg:-translate-y-1/2">
+                <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-500 transition-colors group-focus-within:text-agro-700" size={17} />
+                <input
+                  type="search"
+                  placeholder="Pretraži proizvode..."
+                  className="w-full rounded-xl border border-slate-300 bg-white py-2.5 pl-10 pr-4 text-sm font-medium shadow-sm outline-none transition-all placeholder:text-slate-400 hover:border-slate-400 focus:border-agro-400 focus:ring-4 focus:ring-agro-500/10"
+                  value={searchQuery}
+                  onChange={event => setSearchQuery(event.target.value)}
+                />
+              </div>
+            )}
 
             <div className="ml-auto flex shrink-0 items-center gap-1.5 sm:gap-4">
               <button className="p-2.5 sm:p-3 text-gray-500 hover:text-agro-600 hover:bg-agro-50 rounded-xl transition-all"><User size={20} /></button>
@@ -221,7 +220,7 @@ const Storefront: React.FC = () => {
           </div>
         </nav>
 
-        <main className="flex-1 py-8 md:py-12">
+        <main className="flex-1 py-4 md:py-5">
           <div className="container mx-auto px-4 sm:px-6">
             <Routes>
               <Route path="/" element={
@@ -229,9 +228,11 @@ const Storefront: React.FC = () => {
                   products={products} 
                   categories={categories} 
                   cart={cart} 
-                  addToCart={addToCart} 
-                  removeFromCart={removeFromCart} 
-                />
+                   addToCart={addToCart}
+                   removeFromCart={removeFromCart}
+                   searchQuery={searchQuery}
+                   onSearchQueryChange={setSearchQuery}
+                 />
               } />
               <Route path="/o-nama" element={<AboutUs />} />
               <Route path="/dostava" element={<Delivery />} />

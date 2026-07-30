@@ -3240,19 +3240,19 @@
     ]
   },
   "packageFolders": {
-    "C:\\Users\\rluka\\.nuget\\packages\\": {}
+    "/Users/milena/.nuget/packages/": {}
   },
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "C:\\dev\\Agrosvet\\agrosvet\\agrosvet.api\\agrosvet.api.csproj",
+      "projectUniqueName": "/Users/milena/Documents/GitHub/agrosvet/agrosvet.api/agrosvet.api.csproj",
       "projectName": "agrosvet.api",
-      "projectPath": "C:\\dev\\Agrosvet\\agrosvet\\agrosvet.api\\agrosvet.api.csproj",
-      "packagesPath": "C:\\Users\\rluka\\.nuget\\packages\\",
-      "outputPath": "C:\\dev\\Agrosvet\\agrosvet\\agrosvet.api\\obj\\",
+      "projectPath": "/Users/milena/Documents/GitHub/agrosvet/agrosvet.api/agrosvet.api.csproj",
+      "packagesPath": "/Users/milena/.nuget/packages/",
+      "outputPath": "/Users/milena/Documents/GitHub/agrosvet/agrosvet.api/obj/",
       "projectStyle": "PackageReference",
       "configFilePaths": [
-        "C:\\Users\\rluka\\AppData\\Roaming\\NuGet\\NuGet.Config"
+        "/Users/milena/.nuget/NuGet/NuGet.Config"
       ],
       "originalTargetFrameworks": [
         "net9.0"
@@ -3276,7 +3276,7 @@
         "auditLevel": "low",
         "auditMode": "direct"
       },
-      "SdkAnalysisLevel": "10.0.200"
+      "SdkAnalysisLevel": "9.0.200"
     },
     "frameworks": {
       "net9.0": {
@@ -3312,24 +3312,6 @@
         ],
         "assetTargetFallback": true,
         "warn": true,
-        "downloadDependencies": [
-          {
-            "name": "Microsoft.AspNetCore.App.Ref",
-            "version": "[9.0.14, 9.0.14]"
-          },
-          {
-            "name": "Microsoft.NETCore.App.Host.win-x64",
-            "version": "[9.0.14, 9.0.14]"
-          },
-          {
-            "name": "Microsoft.NETCore.App.Ref",
-            "version": "[9.0.14, 9.0.14]"
-          },
-          {
-            "name": "Microsoft.WindowsDesktop.App.Ref",
-            "version": "[9.0.14, 9.0.14]"
-          }
-        ],
         "frameworkReferences": {
           "Microsoft.AspNetCore.App": {
             "privateAssets": "none"
@@ -3338,7 +3320,7 @@
             "privateAssets": "all"
           }
         },
-        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\10.0.201/PortableRuntimeIdentifierGraph.json"
+        "runtimeIdentifierGraphPath": "/usr/local/share/dotnet/sdk/9.0.203/PortableRuntimeIdentifierGraph.json"
       }
     }
   }
