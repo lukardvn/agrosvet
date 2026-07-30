@@ -1,12 +1,17 @@
 ﻿import React, { useState } from 'react';
 import { ShoppingCart, Sprout, Search, User, Facebook, Instagram, MapPin, ArrowUpDown, ChevronDown, Filter } from 'lucide-react';
-import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Link, Navigate } from 'react-router-dom';
 import { ProductCard } from './components/ProductCard';
 import { Sidebar } from './components/Sidebar';
 import { useAgroApi } from './hooks/useAgroApi';
 import { AboutUs } from './pages/AboutUs';
 import { Delivery } from './pages/Delivery';
 import { Contact } from './pages/Contact';
+import { AdminLayout } from './admin/AdminLayout';
+import { ProductListPage } from './admin/ProductListPage';
+import { ProductFormPage } from './admin/ProductFormPage';
+import { CategoryListPage } from './admin/CategoryListPage';
+import { CategoryFormPage } from './admin/CategoryFormPage';
 
 type SortOption = 'name-asc' | 'name-desc' | 'price-asc' | 'price-desc' | 'default';
 
@@ -172,7 +177,7 @@ const MainShop: React.FC<{
   );
 };
 
-const App: React.FC = () => {
+const Storefront: React.FC = () => {
   const { products, categories, cart, loading, addToCart, removeFromCart } = useAgroApi();
 
   if (loading) return (
@@ -183,8 +188,7 @@ const App: React.FC = () => {
   );
 
   return (
-    <Router>
-      <div className="min-h-screen bg-[#fafafa] flex flex-col font-sans selection:bg-agro-100 selection:text-agro-900">
+    <div className="min-h-screen bg-[#fafafa] flex flex-col font-sans selection:bg-agro-100 selection:text-agro-900">
         <nav className="bg-white/80 backdrop-blur-md border-b border-gray-100 sticky top-0 z-50">
           <div className="container mx-auto px-4 sm:px-6 py-3 sm:py-4 flex justify-between items-center gap-3">
             <Link to="/" className="flex min-w-0 items-center gap-2 sm:gap-3 group cursor-pointer">
@@ -274,9 +278,25 @@ const App: React.FC = () => {
             © 2024 Agrosvet Poljoprivredna Apoteka. Sva prava zadržana.
           </div>
         </footer>
-      </div>
-    </Router>
+    </div>
   );
 };
+
+const App: React.FC = () => (
+  <Router>
+    <Routes>
+      <Route path="/admin" element={<AdminLayout />}>
+        <Route index element={<Navigate to="products" replace />} />
+        <Route path="products" element={<ProductListPage />} />
+        <Route path="products/new" element={<ProductFormPage />} />
+        <Route path="products/:productId/edit" element={<ProductFormPage />} />
+        <Route path="categories" element={<CategoryListPage />} />
+        <Route path="categories/new" element={<CategoryFormPage />} />
+        <Route path="categories/:categoryId/edit" element={<CategoryFormPage />} />
+      </Route>
+      <Route path="*" element={<Storefront />} />
+    </Routes>
+  </Router>
+);
 
 export default App;
