@@ -1,4 +1,4 @@
-﻿using Agrosvet.Api.Models;
+using Agrosvet.Api.Models;
 using Agrosvet.Api.Repositories;
 
 namespace Agrosvet.Api.Services;
@@ -25,13 +25,17 @@ public class CartService(ICartRepository cartRepository, IProductRepository prod
             var existingItem = cart.Items.FirstOrDefault(i => i.ProductId == productId);
             if (existingItem != null)
             {
-                var updatedItem = existingItem with { Quantity = existingItem.Quantity + quantity };
-                cart.Items.Remove(existingItem);
-                cart.Items.Add(updatedItem);
+                existingItem.Quantity += quantity;
             }
             else
             {
-                cart.Items.Add(new CartItem(productId, product.Name, quantity, product.Price));
+                cart.Items.Add(new CartItem
+                {
+                    ProductId = productId,
+                    ProductName = product.Name,
+                    Quantity = quantity,
+                    Price = product.Price
+                });
             }
             cartRepository.Update(cart);
         }

@@ -1,4 +1,4 @@
-﻿using Agrosvet.Api.Models;
+using Agrosvet.Api.Models;
 using Agrosvet.Api.Repositories;
 
 namespace Agrosvet.Api.Services;
@@ -7,6 +7,8 @@ public interface ICategoryService
 {
     IEnumerable<Category> GetAllCategories();
     Category? GetCategoryById(int id);
+    IEnumerable<Category> GetSubcategories(int parentId);
+    IEnumerable<Category> GetTopLevelCategories();
     Category CreateCategory(Category category);
     bool UpdateCategory(Category category);
     bool DeleteCategory(int id);
@@ -17,6 +19,10 @@ public class CategoryService(ICategoryRepository categoryRepository) : ICategory
     public IEnumerable<Category> GetAllCategories() => categoryRepository.GetAll();
 
     public Category? GetCategoryById(int id) => categoryRepository.GetById(id);
+
+    public IEnumerable<Category> GetSubcategories(int parentId) => categoryRepository.GetSubcategories(parentId);
+
+    public IEnumerable<Category> GetTopLevelCategories() => categoryRepository.GetTopLevel();
 
     public Category CreateCategory(Category category) => categoryRepository.Create(category);
 

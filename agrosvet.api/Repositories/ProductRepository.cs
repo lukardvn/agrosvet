@@ -1,4 +1,6 @@
-﻿using Agrosvet.Api.Models;
+using Agrosvet.Api.Data;
+using Agrosvet.Api.Models;
+using Microsoft.EntityFrameworkCore;
 
 namespace Agrosvet.Api.Repositories;
 
@@ -12,42 +14,44 @@ public interface IProductRepository
     bool Delete(int id);
 }
 
-public class ProductRepository : IProductRepository
+public class ProductRepository(AgrosvetDbContext context) : IProductRepository
 {
-    private readonly List<Product> _products = new()
-    {
-        new Product(1, "Seme Kukuruza", "Visokoprinosni hibrid kukuruza.", 1500.00m, 1),
-        new Product(2, "Mineralno Đubrivo NPK", "Univerzalno đubrivo za sve kulture.", 2500.00m, 2),
-        new Product(3, "Herbicid Total", "Sredstvo za suzbijanje korova.", 1200.00m, 3)
-    };
+    public IEnumerable<Product> GetAll() =>
+        context.Products.AsNoTracking().Include(p => p.Images).ToList();
 
-    public IEnumerable<Product> GetAll() => _products;
+    public Product? GetById(int id) =>
+        context.Products.AsNoTracking().Include(p => p.Images).FirstOrDefault(p => p.Id == id);
 
-    public Product? GetById(int id) => _products.FirstOrDefault(p => p.Id == id);
-
-    public IEnumerable<Product> GetByCategory(int categoryId) => _products.Where(p => p.CategoryId == categoryId);
+    public IEnumerable<Product> GetByCategory(int categoryId) =>
+        context.Products.AsNoTracking().Include(p => p.Images).Where(p => p.CategoryId == categoryId).ToList();
 
     public Product Create(Product product)
     {
-        var id = _products.Max(p => p.Id) + 1;
-        var newProduct = product with { Id = id };
-        _products.Add(newProduct);
-        return newProduct;
+        context.Products.Add(product);
+        context.SaveChanges();
+        return product;
     }
 
     public bool Update(Product product)
     {
-        var index = _products.FindIndex(p => p.Id == product.Id);
-        if (index == -1) return false;
-        _products[index] = product;
+        var existing = context.Products.Find(product.Id);
+        if (existing is null) return false;
+
+        existing.Name = product.Name;
+        existing.Description = product.Description;
+        existing.Price = product.Price;
+        existing.CategoryId = product.CategoryId;
+        context.SaveChanges();
         return true;
     }
 
     public bool Delete(int id)
     {
-        var product = GetById(id);
+        var product = context.Products.Find(id);
         if (product is null) return false;
-        _products.Remove(product);
+
+        context.Products.Remove(product);
+        context.SaveChanges();
         return true;
     }
 }

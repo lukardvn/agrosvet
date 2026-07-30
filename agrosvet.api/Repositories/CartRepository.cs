@@ -1,4 +1,6 @@
-﻿using Agrosvet.Api.Models;
+using Agrosvet.Api.Data;
+using Agrosvet.Api.Models;
+using Microsoft.EntityFrameworkCore;
 
 namespace Agrosvet.Api.Repositories;
 
@@ -9,29 +11,30 @@ public interface ICartRepository
     void Clear(int id);
 }
 
-public class CartRepository : ICartRepository
+public class CartRepository(AgrosvetDbContext context) : ICartRepository
 {
-    private readonly Dictionary<int, Cart> _carts = new();
-
     public Cart GetById(int id)
     {
-        if (!_carts.ContainsKey(id))
-        {
-            _carts[id] = new Cart { Id = id };
-        }
-        return _carts[id];
+        var cart = context.Carts.Include(c => c.Items).FirstOrDefault(c => c.Id == id);
+        if (cart is not null) return cart;
+
+        cart = new Cart { Id = id };
+        context.Carts.Add(cart);
+        context.SaveChanges();
+        return cart;
     }
 
     public void Update(Cart cart)
     {
-        _carts[cart.Id] = cart;
+        context.SaveChanges();
     }
 
     public void Clear(int id)
     {
-        if (_carts.ContainsKey(id))
-        {
-            _carts[id].Items.Clear();
-        }
+        var cart = context.Carts.Include(c => c.Items).FirstOrDefault(c => c.Id == id);
+        if (cart is null) return;
+
+        cart.Items.Clear();
+        context.SaveChanges();
     }
 }

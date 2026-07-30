@@ -1,20 +1,20 @@
 {
   "format": 1,
   "restore": {
-    "/Users/milena/Documents/GitHub/agrosvet/agrosvet.api/agrosvet.api.csproj": {}
+    "C:\\dev\\Agrosvet\\agrosvet\\agrosvet.api\\agrosvet.api.csproj": {}
   },
   "projects": {
-    "/Users/milena/Documents/GitHub/agrosvet/agrosvet.api/agrosvet.api.csproj": {
+    "C:\\dev\\Agrosvet\\agrosvet\\agrosvet.api\\agrosvet.api.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "/Users/milena/Documents/GitHub/agrosvet/agrosvet.api/agrosvet.api.csproj",
+        "projectUniqueName": "C:\\dev\\Agrosvet\\agrosvet\\agrosvet.api\\agrosvet.api.csproj",
         "projectName": "agrosvet.api",
-        "projectPath": "/Users/milena/Documents/GitHub/agrosvet/agrosvet.api/agrosvet.api.csproj",
-        "packagesPath": "/Users/milena/.nuget/packages/",
-        "outputPath": "/Users/milena/Documents/GitHub/agrosvet/agrosvet.api/obj/",
+        "projectPath": "C:\\dev\\Agrosvet\\agrosvet\\agrosvet.api\\agrosvet.api.csproj",
+        "packagesPath": "C:\\Users\\rluka\\.nuget\\packages\\",
+        "outputPath": "C:\\dev\\Agrosvet\\agrosvet\\agrosvet.api\\obj\\",
         "projectStyle": "PackageReference",
         "configFilePaths": [
-          "/Users/milena/.nuget/NuGet/NuGet.Config"
+          "C:\\Users\\rluka\\AppData\\Roaming\\NuGet\\NuGet.Config"
         ],
         "originalTargetFrameworks": [
           "net9.0"
@@ -38,7 +38,7 @@
           "auditLevel": "low",
           "auditMode": "direct"
         },
-        "SdkAnalysisLevel": "9.0.200"
+        "SdkAnalysisLevel": "10.0.200"
       },
       "frameworks": {
         "net9.0": {
@@ -47,6 +47,16 @@
             "Microsoft.AspNetCore.OpenApi": {
               "target": "Package",
               "version": "[9.0.0, )"
+            },
+            "Microsoft.EntityFrameworkCore.Design": {
+              "include": "Runtime, Build, Native, ContentFiles, Analyzers, BuildTransitive",
+              "suppressParent": "All",
+              "target": "Package",
+              "version": "[9.0.0, )"
+            },
+            "Npgsql.EntityFrameworkCore.PostgreSQL": {
+              "target": "Package",
+              "version": "[9.0.4, )"
             },
             "Swashbuckle.AspNetCore": {
               "target": "Package",
@@ -64,6 +74,24 @@
           ],
           "assetTargetFallback": true,
           "warn": true,
+          "downloadDependencies": [
+            {
+              "name": "Microsoft.AspNetCore.App.Ref",
+              "version": "[9.0.14, 9.0.14]"
+            },
+            {
+              "name": "Microsoft.NETCore.App.Host.win-x64",
+              "version": "[9.0.14, 9.0.14]"
+            },
+            {
+              "name": "Microsoft.NETCore.App.Ref",
+              "version": "[9.0.14, 9.0.14]"
+            },
+            {
+              "name": "Microsoft.WindowsDesktop.App.Ref",
+              "version": "[9.0.14, 9.0.14]"
+            }
+          ],
           "frameworkReferences": {
             "Microsoft.AspNetCore.App": {
               "privateAssets": "none"
@@ -72,7 +100,7 @@
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "/usr/local/share/dotnet/sdk/9.0.203/PortableRuntimeIdentifierGraph.json"
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\10.0.201/PortableRuntimeIdentifierGraph.json"
         }
       }
     }
