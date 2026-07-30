@@ -1,5 +1,6 @@
 ﻿import { useState, useEffect } from 'react';
 import { Product, Category, Cart } from '../types';
+import { adminApi } from '../services/adminApi';
 
 const API_URL = 'http://localhost:5000';
 
@@ -12,14 +13,20 @@ export const useAgroApi = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const [pRes, cRes, cartRes] = await Promise.all([
-          fetch(`${API_URL}/products`),
-          fetch(`${API_URL}/categories`),
-          fetch(`${API_URL}/cart/1`)
+        const [productData, categoryData] = await Promise.all([
+          adminApi.getProducts(),
+          adminApi.getCategories(),
         ]);
-        setProducts(await pRes.json());
-        setCategories(await cRes.json());
-        setCart(await cartRes.json());
+        setProducts(productData.filter(product => product.status === 'active'));
+        setCategories(categoryData);
+
+        try {
+          const cartResponse = await fetch(`${API_URL}/cart/1`);
+          if (!cartResponse.ok) throw new Error('Cart request failed');
+          setCart(await cartResponse.json());
+        } catch {
+          setCart({ id: 1, items: [], totalPrice: 0 });
+        }
       } catch (error) {
         console.error("Failed to fetch data", error);
       } finally {

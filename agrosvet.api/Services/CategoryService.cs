@@ -9,6 +9,7 @@ public interface ICategoryService
     Category? GetCategoryById(int id);
     IEnumerable<Category> GetSubcategories(int parentId);
     IEnumerable<Category> GetTopLevelCategories();
+    bool CategoryExists(int id);
     Category CreateCategory(Category category);
     bool UpdateCategory(Category category);
     bool DeleteCategory(int id);
@@ -23,6 +24,8 @@ public class CategoryService(ICategoryRepository categoryRepository) : ICategory
     public IEnumerable<Category> GetSubcategories(int parentId) => categoryRepository.GetSubcategories(parentId);
 
     public IEnumerable<Category> GetTopLevelCategories() => categoryRepository.GetTopLevel();
+
+    public bool CategoryExists(int id) => categoryRepository.Exists(id);
 
     public Category CreateCategory(Category category) => categoryRepository.Create(category);
 

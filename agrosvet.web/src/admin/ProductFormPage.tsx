@@ -84,8 +84,6 @@ export const ProductFormPage = () => {
     const nextErrors: Partial<Record<keyof ProductFormState, string>> = {};
     const price = Number(form.price.replace(',', '.'));
     if (!form.name.trim()) nextErrors.name = 'Unesite naziv proizvoda.';
-    if (!form.description.trim()) nextErrors.description = 'Unesite opis proizvoda.';
-    if (!form.imageUrl && !imageFile) nextErrors.imageUrl = 'Dodajte fotografiju proizvoda.';
     if (!Number.isFinite(price) || price <= 0) nextErrors.price = 'Cena mora biti veća od nule.';
     if (!form.categoryId || !categories.some(category => category.id === Number(form.categoryId))) {
       nextErrors.categoryId = 'Izaberite kategoriju.';
@@ -200,7 +198,6 @@ export const ProductFormPage = () => {
                 : <ImageOff size={38} strokeWidth={1.5} />}
             </div>
             {imageFailed && <p className="mt-2 text-xs font-bold text-red-600">Slika sa ove adrese nije dostupna.</p>}
-            {errors.imageUrl && <p className="mt-2 text-xs font-bold text-red-600">{errors.imageUrl}</p>}
             <label className="mt-3 flex cursor-pointer items-center justify-center gap-2 rounded-xl border border-slate-200 px-4 py-2.5 text-sm font-bold text-slate-600 transition hover:border-agro-300 hover:bg-agro-50 hover:text-agro-700">
               <Upload size={17} />
               {imagePreview ? 'Zameni fotografiju' : 'Dodaj fotografiju'}

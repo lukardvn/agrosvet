@@ -69,16 +69,16 @@ export const Sidebar: React.FC<SidebarProps> = ({
   return (
     <aside className={`flex w-full flex-col gap-4 lg:w-72 lg:shrink-0 lg:gap-5 ${className}`}>
       {/* Categories Section */}
-      <div className="surface-card rounded-2xl p-5 backdrop-blur-xl transition-all hover:shadow-hover">
-        <div className="mb-4 flex items-center gap-2.5 text-xs font-black uppercase tracking-[0.2em] text-earth-900 opacity-80">
+      <div className="surface-card rounded-2xl p-4 backdrop-blur-xl transition-all hover:shadow-hover">
+        <div className="mb-3 flex items-center gap-2 text-xs font-black uppercase tracking-[0.16em] text-earth-900 opacity-80">
           <Tag size={18} className="text-agro-600" />
           <span>Kategorije</span>
         </div>
-        <ul className="space-y-1.5">
+        <ul className="space-y-0.5">
           <li>
             <button 
               onClick={() => onCategorySelect(null)}
-              className={`group flex w-full items-center justify-between rounded-xl px-4 py-2.5 text-left transition-all duration-300 ${!activeCategoryId ? 'bg-agro-600 text-white shadow-lg shadow-agro-600/30' : 'hover:bg-agro-50 text-gray-600'}`}
+              className={`group flex w-full items-center justify-between rounded-lg px-3 py-2 text-left transition-all duration-300 ${!activeCategoryId ? 'bg-agro-600 text-white shadow-md shadow-agro-600/20' : 'hover:bg-agro-50 text-gray-600'}`}
             >
               <span className="font-bold text-sm tracking-wide">Sve Ponude</span>
               <Filter size={14} className={`${!activeCategoryId ? 'opacity-100 scale-125' : 'opacity-0 group-hover:opacity-40'} transition-all`} />
@@ -88,7 +88,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
             <li key={category.id}>
               <button 
                 onClick={() => onCategorySelect(category.id)}
-                className={`group flex w-full items-center justify-between rounded-xl px-4 py-2.5 text-left transition-all duration-300 ${activeCategoryId === category.id ? 'bg-agro-600 text-white shadow-lg shadow-agro-600/30 font-bold' : 'hover:bg-agro-50 text-gray-600'}`}
+                className={`group flex w-full items-center justify-between rounded-lg px-3 py-2 text-left transition-all duration-300 ${activeCategoryId === category.id ? 'bg-agro-600 text-white shadow-md shadow-agro-600/20 font-bold' : 'hover:bg-agro-50 text-gray-600'}`}
               >
                 <span className="text-sm tracking-wide">{category.name}</span>
                 <div className={`w-1.5 h-1.5 rounded-full bg-white ${activeCategoryId === category.id ? 'opacity-100 scale-125' : 'opacity-0'} transition-all`} />
