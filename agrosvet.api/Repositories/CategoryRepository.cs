@@ -10,6 +10,7 @@ public interface ICategoryRepository
     Category? GetById(int id);
     IEnumerable<Category> GetSubcategories(int parentId);
     IEnumerable<Category> GetTopLevel();
+    bool Exists(int id);
     Category Create(Category category);
     bool Update(Category category);
     bool Delete(int id);
@@ -29,6 +30,8 @@ public class CategoryRepository(AgrosvetDbContext context) : ICategoryRepository
     public IEnumerable<Category> GetTopLevel() =>
         context.Categories.AsNoTracking().Where(c => c.ParentCategoryId == null).ToList();
 
+    public bool Exists(int id) => context.Categories.Any(c => c.Id == id);
+
     public Category Create(Category category)
     {
         context.Categories.Add(category);
@@ -42,7 +45,6 @@ public class CategoryRepository(AgrosvetDbContext context) : ICategoryRepository
         if (existing is null) return false;
 
         existing.Name = category.Name;
-        existing.Description = category.Description;
         existing.ParentCategoryId = category.ParentCategoryId;
         context.SaveChanges();
         return true;

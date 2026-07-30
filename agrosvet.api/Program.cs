@@ -3,6 +3,7 @@ using Agrosvet.Api.Data;
 using Agrosvet.Api.Endpoints;
 using Agrosvet.Api.Repositories;
 using Agrosvet.Api.Services;
+using Agrosvet.Api.Storage;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -46,8 +47,8 @@ builder.Services.AddScoped<ICategoryRepository, CategoryRepository>();
 builder.Services.AddScoped<ICategoryService, CategoryService>();
 builder.Services.AddScoped<ICartRepository, CartRepository>();
 builder.Services.AddScoped<ICartService, CartService>();
-builder.Services.AddScoped<IProductImageRepository, ProductImageRepository>();
-builder.Services.AddScoped<IProductImageService, ProductImageService>();
+builder.Services.Configure<R2Options>(builder.Configuration.GetSection("R2"));
+builder.Services.AddSingleton<IProductImageStorage, R2ImageStorage>();
 
 var app = builder.Build();
 
@@ -74,7 +75,6 @@ app.UseCors("AllowAll"); // Enable CORS
 app.MapProductEndpoints();
 app.MapCategoryEndpoints();
 app.MapCartEndpoints();
-app.MapProductImageEndpoints();
 
 app.Run();
 

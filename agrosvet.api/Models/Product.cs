@@ -17,7 +17,15 @@ public class Product
 
     public int CategoryId { get; set; }
 
+    public ProductStatus Status { get; set; } = ProductStatus.Active;
+
     // Navigation properties
     public Category Category { get; set; } = null!;
-    public List<ProductImage> Images { get; set; } = new();
+    public ProductImage? Image { get; set; }
+}
+
+public enum ProductStatus
+{
+    Active,
+    Inactive
 }

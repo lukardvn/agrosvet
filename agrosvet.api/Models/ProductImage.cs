@@ -12,10 +12,8 @@ public class ProductImage
     [MaxLength(500)]
     public string Url { get; set; } = string.Empty;
 
-    [MaxLength(200)]
-    public string? AltText { get; set; }
-
-    public int SortOrder { get; set; }
+    [MaxLength(500)]
+    public string? StorageKey { get; set; }
 
     // Navigation property
     public Product Product { get; set; } = null!;
