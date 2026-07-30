@@ -1,4 +1,4 @@
-﻿using Agrosvet.Api.Models;
+using Agrosvet.Api.Models;
 using Agrosvet.Api.Services;
 
 namespace Agrosvet.Api.Endpoints;
@@ -13,12 +13,20 @@ public static class CategoryEndpoints
             Results.Ok(categoryService.GetAllCategories()))
         .WithName("GetCategories");
 
+        group.MapGet("/top-level", (ICategoryService categoryService) =>
+            Results.Ok(categoryService.GetTopLevelCategories()))
+        .WithName("GetTopLevelCategories");
+
         group.MapGet("/{id}", (int id, ICategoryService categoryService) =>
         {
             var category = categoryService.GetCategoryById(id);
             return category is not null ? Results.Ok(category) : Results.NotFound();
         })
         .WithName("GetCategoryById");
+
+        group.MapGet("/{id}/subcategories", (int id, ICategoryService categoryService) =>
+            Results.Ok(categoryService.GetSubcategories(id)))
+        .WithName("GetSubcategories");
 
         group.MapGet("/{id}/products", (int id, IProductService productService) => 
             Results.Ok(productService.GetProductsByCategory(id)))

@@ -1,4 +1,6 @@
-﻿using Agrosvet.Api.Models;
+using Agrosvet.Api.Data;
+using Agrosvet.Api.Models;
+using Microsoft.EntityFrameworkCore;
 
 namespace Agrosvet.Api.Repositories;
 
@@ -6,46 +8,53 @@ public interface ICategoryRepository
 {
     IEnumerable<Category> GetAll();
     Category? GetById(int id);
+    IEnumerable<Category> GetSubcategories(int parentId);
+    IEnumerable<Category> GetTopLevel();
     Category Create(Category category);
     bool Update(Category category);
     bool Delete(int id);
 }
 
-public class CategoryRepository : ICategoryRepository
+public class CategoryRepository(AgrosvetDbContext context) : ICategoryRepository
 {
-    private readonly List<Category> _categories = new()
-    {
-        new Category(1, "Seme", "Seme za različite poljoprivredne kulture."),
-        new Category(2, "Đubrivo", "Mineralna i organska đubriva."),
-        new Category(3, "Zaštita bilja", "Herbicidi, fungicidi i insekticidi."),
-        new Category(4, "Alati", "Ručni i motorni alati za poljoprivredu.")
-    };
+    public IEnumerable<Category> GetAll() =>
+        context.Categories.AsNoTracking().ToList();
 
-    public IEnumerable<Category> GetAll() => _categories;
+    public Category? GetById(int id) =>
+        context.Categories.AsNoTracking().FirstOrDefault(c => c.Id == id);
 
-    public Category? GetById(int id) => _categories.FirstOrDefault(c => c.Id == id);
+    public IEnumerable<Category> GetSubcategories(int parentId) =>
+        context.Categories.AsNoTracking().Where(c => c.ParentCategoryId == parentId).ToList();
+
+    public IEnumerable<Category> GetTopLevel() =>
+        context.Categories.AsNoTracking().Where(c => c.ParentCategoryId == null).ToList();
 
     public Category Create(Category category)
     {
-        var id = _categories.Any() ? _categories.Max(c => c.Id) + 1 : 1;
-        var newCategory = category with { Id = id };
-        _categories.Add(newCategory);
-        return newCategory;
+        context.Categories.Add(category);
+        context.SaveChanges();
+        return category;
     }
 
     public bool Update(Category category)
     {
-        var index = _categories.FindIndex(c => c.Id == category.Id);
-        if (index == -1) return false;
-        _categories[index] = category;
+        var existing = context.Categories.Find(category.Id);
+        if (existing is null) return false;
+
+        existing.Name = category.Name;
+        existing.Description = category.Description;
+        existing.ParentCategoryId = category.ParentCategoryId;
+        context.SaveChanges();
         return true;
     }
 
     public bool Delete(int id)
     {
-        var category = GetById(id);
+        var category = context.Categories.Find(id);
         if (category is null) return false;
-        _categories.Remove(category);
+
+        context.Categories.Remove(category);
+        context.SaveChanges();
         return true;
     }
 }
