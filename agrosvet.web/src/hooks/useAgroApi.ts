@@ -1,8 +1,10 @@
 ﻿import { useEffect, useState } from "react";
 import { API_URL, apiRequest } from "../services/apiClient";
 import { Cart, Category, Product } from "../types";
+import { useSnackbar } from "../components/SnackbarProvider";
 
 export const useAgroApi = () => {
+  const snackbar = useSnackbar();
   const [products, setProducts] = useState<Product[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [cart, setCart] = useState<Cart | null>(null);
@@ -35,20 +37,30 @@ export const useAgroApi = () => {
   }, []);
 
   const addToCart = async (productId: number) => {
-    const res = await fetch(
-      `${API_URL}/cart/1/items?cartId=1&productId=${productId}&quantity=1`,
-      {
-        method: "POST",
-      },
-    );
-    setCart(await res.json());
+    try {
+      const res = await fetch(
+        `${API_URL}/cart/1/items?cartId=1&productId=${productId}&quantity=1`,
+        { method: "POST" },
+      );
+      if (!res.ok) throw new Error();
+      setCart(await res.json());
+      snackbar.success('Proizvod je dodat u korpu.');
+    } catch {
+      snackbar.error('Proizvod trenutno nije moguće dodati u korpu.');
+    }
   };
 
   const removeFromCart = async (productId: number) => {
-    const res = await fetch(`${API_URL}/cart/1/items/${productId}`, {
-      method: "DELETE",
-    });
-    setCart(await res.json());
+    try {
+      const res = await fetch(`${API_URL}/cart/1/items/${productId}`, {
+        method: "DELETE",
+      });
+      if (!res.ok) throw new Error();
+      setCart(await res.json());
+      snackbar.info('Proizvod je uklonjen iz korpe.', { title: 'Korpa je ažurirana' });
+    } catch {
+      snackbar.error('Proizvod trenutno nije moguće ukloniti iz korpe.');
+    }
   };
 
   return { products, categories, cart, loading, addToCart, removeFromCart };

@@ -5,6 +5,7 @@ import { ProductCard } from './components/ProductCard';
 import { Breadcrumbs, BreadcrumbItem } from './components/Breadcrumbs';
 import { UserMenu } from './components/UserMenu';
 import { CartMenu } from './components/CartMenu';
+import { SnackbarProvider } from './components/SnackbarProvider';
 import { Sidebar } from './components/Sidebar';
 import { useAgroApi } from './hooks/useAgroApi';
 import { AboutUs } from './pages/AboutUs';
@@ -343,20 +344,22 @@ const Storefront: React.FC = () => {
 };
 
 const App: React.FC = () => (
-  <Router>
-    <Routes>
-      <Route path="/admin" element={<AdminLayout />}>
-        <Route index element={<Navigate to="products" replace />} />
-        <Route path="products" element={<ProductListPage />} />
-        <Route path="products/new" element={<ProductFormPage />} />
-        <Route path="products/:productId/edit" element={<ProductFormPage />} />
-        <Route path="categories" element={<CategoryListPage />} />
-        <Route path="categories/new" element={<CategoryFormPage />} />
-        <Route path="categories/:categoryId/edit" element={<CategoryFormPage />} />
-      </Route>
-      <Route path="*" element={<Storefront />} />
-    </Routes>
-  </Router>
+  <SnackbarProvider>
+    <Router>
+      <Routes>
+        <Route path="/admin" element={<AdminLayout />}>
+          <Route index element={<Navigate to="products" replace />} />
+          <Route path="products" element={<ProductListPage />} />
+          <Route path="products/new" element={<ProductFormPage />} />
+          <Route path="products/:productId/edit" element={<ProductFormPage />} />
+          <Route path="categories" element={<CategoryListPage />} />
+          <Route path="categories/new" element={<CategoryFormPage />} />
+          <Route path="categories/:categoryId/edit" element={<CategoryFormPage />} />
+        </Route>
+        <Route path="*" element={<Storefront />} />
+      </Routes>
+    </Router>
+  </SnackbarProvider>
 );
 
 export default App;

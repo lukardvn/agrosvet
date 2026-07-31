@@ -4,6 +4,7 @@ import { Link, useNavigate, useParams } from 'react-router-dom';
 import { adminApi } from '../services/adminApi';
 import { Category } from '../types';
 import { orderCategories } from './categoryTree';
+import { useSnackbar } from '../components/SnackbarProvider';
 
 interface ProductFormState {
   name: string;
@@ -20,6 +21,7 @@ export const ProductFormPage = () => {
   const { productId } = useParams();
   const isEditing = productId !== undefined;
   const navigate = useNavigate();
+  const snackbar = useSnackbar();
   const [form, setForm] = useState(emptyForm);
   const [initialForm, setInitialForm] = useState<ProductFormState | null>(null);
   const [imageFile, setImageFile] = useState<File | null>(null);
@@ -111,9 +113,12 @@ export const ProductFormPage = () => {
     try {
       if (isEditing) await adminApi.updateProduct(Number(productId), input);
       else await adminApi.createProduct(input);
+      snackbar.success(isEditing ? 'Izmene proizvoda su sačuvane.' : 'Novi proizvod je dodat u ponudu.');
       navigate('/admin/products');
     } catch (error) {
-      setPageError(error instanceof Error ? error.message : 'Proizvod nije sačuvan.');
+      const message = error instanceof Error ? error.message : 'Proizvod nije sačuvan.';
+      setPageError(message);
+      snackbar.error(message, { title: 'Proizvod nije sačuvan' });
     } finally {
       setSaving(false);
     }

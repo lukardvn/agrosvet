@@ -1,5 +1,6 @@
 import { FormEvent, useState } from 'react';
 import { Check } from 'lucide-react';
+import { useSnackbar } from '../../components/SnackbarProvider';
 
 const storageKey = 'agrosvet-purchase-info';
 interface PurchaseInfo {
@@ -14,6 +15,7 @@ interface PurchaseInfo {
 const emptyInfo: PurchaseInfo = { fullName: '', email: '', phone: '', address: '', city: '', postalCode: '' };
 
 export const UserInfoPage = () => {
+  const snackbar = useSnackbar();
   const [info, setInfo] = useState<PurchaseInfo>(() => {
     try {
       return { ...emptyInfo, ...JSON.parse(localStorage.getItem(storageKey) ?? '{}') };
@@ -25,8 +27,13 @@ export const UserInfoPage = () => {
 
   const handleSubmit = (event: FormEvent) => {
     event.preventDefault();
-    localStorage.setItem(storageKey, JSON.stringify(info));
-    setSaved(true);
+    try {
+      localStorage.setItem(storageKey, JSON.stringify(info));
+      setSaved(true);
+      snackbar.success('Podaci za kupovinu sačuvani su na ovom uređaju.');
+    } catch {
+      snackbar.error('Pregledač nije dozvolio čuvanje podataka na ovom uređaju.');
+    }
   };
 
   const update = (field: keyof typeof info, value: string) => {

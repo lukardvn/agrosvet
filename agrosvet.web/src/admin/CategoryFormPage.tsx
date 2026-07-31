@@ -4,12 +4,14 @@ import { Link, useNavigate, useParams } from 'react-router-dom';
 import { adminApi } from '../services/adminApi';
 import { Category } from '../types';
 import { getDescendantIds, orderCategories } from './categoryTree';
+import { useSnackbar } from '../components/SnackbarProvider';
 
 export const CategoryFormPage = () => {
   const { categoryId } = useParams();
   const isEditing = categoryId !== undefined;
   const parsedCategoryId = Number(categoryId);
   const navigate = useNavigate();
+  const snackbar = useSnackbar();
   const [name, setName] = useState('');
   const [parentId, setParentId] = useState('');
   const [categories, setCategories] = useState<Category[]>([]);
@@ -62,9 +64,12 @@ export const CategoryFormPage = () => {
       const input = { name: name.trim(), parentId: selectedParentId };
       if (isEditing) await adminApi.updateCategory(parsedCategoryId, input);
       else await adminApi.createCategory(input);
+      snackbar.success(isEditing ? 'Izmene kategorije su sačuvane.' : 'Nova kategorija je dodata.');
       navigate('/admin/categories');
     } catch (error) {
-      setPageError(error instanceof Error ? error.message : 'Kategorija nije sačuvana.');
+      const message = error instanceof Error ? error.message : 'Kategorija nije sačuvana.';
+      setPageError(message);
+      snackbar.error(message, { title: 'Kategorija nije sačuvana' });
     } finally {
       setSaving(false);
     }

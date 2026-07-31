@@ -53,3 +53,24 @@
 ::-webkit-scrollbar-thumb {
   @apply bg-slate-200 rounded-full hover:bg-slate-300 transition-colors;
 }
+
+@keyframes snackbar-enter {
+  from {
+    opacity: 0;
+    transform: translateY(12px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.snackbar-enter {
+  animation: snackbar-enter 180ms ease-out;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .snackbar-enter {
+    animation: none;
+  }
+}
