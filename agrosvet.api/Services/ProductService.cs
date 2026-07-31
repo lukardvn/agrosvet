@@ -8,7 +8,9 @@ public interface IProductService
 {
     IEnumerable<Product> GetAllProducts();
     Product? GetProductById(int id);
-    IEnumerable<Product> GetProductsByCategory(int categoryId);
+    IEnumerable<Product> GetActiveProducts();
+    Product? GetActiveProductById(int id);
+    IEnumerable<Product> GetActiveProductsByCategory(int categoryId);
     Task<Product> CreateProductAsync(Product product, IFormFile? image, CancellationToken cancellationToken);
     Task<Product?> UpdateProductAsync(int id, Product product, IFormFile? image, CancellationToken cancellationToken);
     Task<bool> DeleteProductAsync(int id, CancellationToken cancellationToken);
@@ -23,7 +25,12 @@ public class ProductService(
 
     public Product? GetProductById(int id) => productRepository.GetById(id);
 
-    public IEnumerable<Product> GetProductsByCategory(int categoryId) => productRepository.GetByCategory(categoryId);
+    public IEnumerable<Product> GetActiveProducts() => productRepository.GetAllActive();
+
+    public Product? GetActiveProductById(int id) => productRepository.GetActiveById(id);
+
+    public IEnumerable<Product> GetActiveProductsByCategory(int categoryId) =>
+        productRepository.GetActiveByCategory(categoryId);
 
     public async Task<Product> CreateProductAsync(
         Product product,

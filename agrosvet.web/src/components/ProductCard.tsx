@@ -1,46 +1,40 @@
 ﻿import React from 'react';
-import { ImageOff, ShoppingBag, Plus } from 'lucide-react';
+import { ImageOff, ShoppingBag } from 'lucide-react';
 import { Product } from '../types';
 
 interface ProductCardProps {
   product: Product;
   categoryName?: string;
   onAddToCart: (id: number) => void;
+  viewMode?: 'gallery' | 'list';
 }
 
-export const ProductCard: React.FC<ProductCardProps> = ({ product, categoryName, onAddToCart }) => (
-  <div className="surface-card group overflow-hidden rounded-2xl transition-all duration-300 hover:-translate-y-0.5 hover:shadow-hover">
-    <div className="relative flex h-40 items-center justify-center overflow-hidden bg-gradient-to-br from-agro-50 to-agro-100 text-agro-300 sm:h-44">
-      <ImageOff className="absolute" size={52} strokeWidth={1} />
+export const ProductCard: React.FC<ProductCardProps> = ({ product, categoryName, onAddToCart, viewMode = 'gallery' }) => (
+  <article className={`group min-w-0 ${viewMode === 'list' ? 'grid grid-cols-[112px_minmax(0,1fr)] gap-4 border-b border-agro-950/10 pb-5 sm:grid-cols-[190px_minmax(0,1fr)] sm:gap-7' : 'flex flex-col'}`}>
+    <div className={`relative flex aspect-square items-center justify-center overflow-hidden rounded-md bg-[#f3f3ef] text-agro-300 ${viewMode === 'list' ? 'self-start' : ''}`}>
+      <ImageOff className="absolute" size={58} strokeWidth={1} />
       {product.imageUrl && (
         <img
           src={product.imageUrl}
           alt={product.name}
           onError={event => { event.currentTarget.style.display = 'none'; }}
-          className="relative h-full w-full object-cover transition-transform duration-500 ease-out group-hover:scale-105"
+          className="relative h-full w-full object-cover transition-transform duration-500 ease-out group-hover:scale-[1.025]"
         />
       )}
-      <div className="absolute right-3 top-3 rounded-full border border-agro-100 bg-white/90 px-2.5 py-1 text-[9px] font-black uppercase tracking-widest text-agro-700 shadow-sm backdrop-blur-sm">
-        {categoryName || 'Proizvod'}
-      </div>
     </div>
-    <div className="p-4">
-      <h3 className="mb-3 line-clamp-2 text-base font-bold leading-snug text-gray-900 transition-colors group-hover:text-agro-700">{product.name}</h3>
-
-      <div className="flex items-center justify-between border-t border-gray-50 pt-3">
-        <div>
-          <span className="text-[10px] block font-bold text-gray-400 uppercase tracking-tighter">Cena</span>
-          <span className="text-lg font-black text-earth-900">{product.price.toLocaleString('sr-RS')} <small className="text-xs font-normal">RSD</small></span>
-        </div>
-        <button 
+    <div className={`flex min-w-0 flex-1 flex-col ${viewMode === 'list' ? 'py-1 sm:py-3' : 'pt-4'}`}>
+      <p className="mb-1.5 text-[10px] uppercase tracking-[0.15em] text-agro-700">{categoryName || 'Proizvod'}</p>
+      <h3 className={`line-clamp-2 text-sm font-medium leading-5 text-agro-950 ${viewMode === 'list' ? 'sm:text-base' : ''}`}>{product.name}</h3>
+      <p className="mb-4 text-right text-base font-medium text-agro-950">{product.price.toLocaleString('sr-RS')} RSD</p>
+      <div className={`mt-auto ${viewMode === 'list' ? 'max-w-56' : ''}`}>
+        <button
           onClick={() => onAddToCart(product.id)}
-          className="group/btn flex items-center justify-center rounded-lg bg-agro-600 p-2.5 font-bold text-white shadow-md shadow-agro-600/20 transition-all hover:bg-agro-700 active:scale-90"
-          title="Dodaj u korpu"
+          className="flex w-full items-center justify-center gap-2 rounded-[3px] bg-agro-900 px-4 py-3 text-xs font-medium uppercase tracking-[0.08em] text-white transition-colors hover:bg-agro-800 active:bg-agro-950"
         >
-          <ShoppingBag size={18} className="transition-transform group-hover/btn:scale-110" />
-          <Plus size={12} className="absolute ml-5 mb-4" strokeWidth={4} />
+          <ShoppingBag size={15} />
+          Dodaj u korpu
         </button>
       </div>
     </div>
-  </div>
+  </article>
 );

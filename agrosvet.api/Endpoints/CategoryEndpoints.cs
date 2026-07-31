@@ -8,32 +8,33 @@ public static class CategoryEndpoints
 {
     public static void MapCategoryEndpoints(this IEndpointRouteBuilder app)
     {
-        var group = app.MapGroup("/categories");
+        var publicGroup = app.MapGroup("/categories");
+        var adminGroup = app.MapGroup("/admin/categories");
 
-        group.MapGet("/", (ICategoryService categoryService) =>
+        publicGroup.MapGet("/", (ICategoryService categoryService) =>
             Results.Ok(categoryService.GetAllCategories().Select(category => category.ToDto())))
         .WithName("GetCategories");
 
-        group.MapGet("/top-level", (ICategoryService categoryService) =>
+        publicGroup.MapGet("/top-level", (ICategoryService categoryService) =>
             Results.Ok(categoryService.GetTopLevelCategories().Select(category => category.ToDto())))
         .WithName("GetTopLevelCategories");
 
-        group.MapGet("/{id}", (int id, ICategoryService categoryService) =>
+        publicGroup.MapGet("/{id}", (int id, ICategoryService categoryService) =>
         {
             var category = categoryService.GetCategoryById(id);
             return category is not null ? Results.Ok(category.ToDto()) : Results.NotFound();
         })
         .WithName("GetCategoryById");
 
-        group.MapGet("/{id}/subcategories", (int id, ICategoryService categoryService) =>
+        publicGroup.MapGet("/{id}/subcategories", (int id, ICategoryService categoryService) =>
             Results.Ok(categoryService.GetSubcategories(id).Select(category => category.ToDto())))
         .WithName("GetSubcategories");
 
-        group.MapGet("/{id}/products", (int id, IProductService productService) =>
-            Results.Ok(productService.GetProductsByCategory(id).Select(product => product.ToDto())))
+        publicGroup.MapGet("/{id}/products", (int id, IProductService productService) =>
+            Results.Ok(productService.GetActiveProductsByCategory(id).Select(product => product.ToDto())))
         .WithName("GetProductsByCategoryId");
 
-        group.MapPost("/", (CategoryUpsertRequest request, ICategoryService categoryService) =>
+        adminGroup.MapPost("/", (CategoryUpsertRequest request, ICategoryService categoryService) =>
         {
             var errors = Validate(request, null, categoryService);
             if (errors.Count > 0) return Results.ValidationProblem(errors);
@@ -47,7 +48,7 @@ public static class CategoryEndpoints
         })
         .WithName("CreateCategory");
 
-        group.MapPut("/{id}", (int id, CategoryUpsertRequest request, ICategoryService categoryService) =>
+        adminGroup.MapPut("/{id}", (int id, CategoryUpsertRequest request, ICategoryService categoryService) =>
         {
             if (categoryService.GetCategoryById(id) is null) return Results.NotFound();
 
@@ -65,7 +66,7 @@ public static class CategoryEndpoints
         })
         .WithName("UpdateCategory");
 
-        group.MapDelete("/{id}", (int id, ICategoryService categoryService) =>
+        adminGroup.MapDelete("/{id}", (int id, ICategoryService categoryService) =>
         {
             var success = categoryService.DeleteCategory(id);
             return success ? Results.NoContent() : Results.NotFound();

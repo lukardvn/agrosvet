@@ -19,7 +19,7 @@ export const Contact: React.FC = () => (
             <div className="bg-agro-50 text-agro-600 p-4 rounded-2xl"><Phone size={24} /></div>
             <div>
               <div className="text-xs font-black uppercase tracking-widest text-gray-400 mb-1">Telefon</div>
-              <div className="font-bold text-gray-900">+381 00 000 0000</div>
+               <a href="tel:+381216465745" className="font-bold text-gray-900 hover:text-agro-700 hover:underline">021 646 5745</a>
             </div>
           </div>
           <div className="flex gap-4">
@@ -34,7 +34,7 @@ export const Contact: React.FC = () => (
             <div>
               <div className="text-xs font-black uppercase tracking-widest text-gray-400 mb-1">Lokacija</div>
               <div className="font-bold text-gray-900">Agrosvet Poljoprivredna Apoteka</div>
-              <a href="https://maps.app.goo.gl/mTvci45HF6YFZW1UA" target="_blank" rel="noopener noreferrer" className="text-sm text-agro-600 hover:underline">Otvori u Google Mapama</a>
+               <a href="https://maps.app.goo.gl/x4M6M59VRSuLPY8KA" target="_blank" rel="noopener noreferrer" className="text-sm text-agro-600 hover:underline">Otvori u Google mapama</a>
             </div>
           </div>
         </div>
@@ -61,6 +61,17 @@ export const Contact: React.FC = () => (
           </button>
         </form>
       </div>
+    </div>
+
+    <div className="mt-12 overflow-hidden rounded-2xl border border-agro-950/10">
+      <iframe
+        title="Agrosvet poljoapoteka na Google mapama"
+        src="https://www.google.com/maps?q=45.2261933,19.8493154&output=embed"
+        loading="lazy"
+        referrerPolicy="no-referrer-when-downgrade"
+        className="h-72 w-full border-0 sm:h-80"
+        allowFullScreen
+      />
     </div>
   </div>
 );
