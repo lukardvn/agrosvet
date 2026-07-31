@@ -1,8 +1,10 @@
 ﻿import React, { useEffect, useState } from 'react';
-import { ShoppingCart, Sprout, Search, User, Phone, MapPin, ChevronDown, Grid2X2, Rows3, SlidersHorizontal } from 'lucide-react';
+import { Sprout, Search, Phone, MapPin, ChevronDown, Grid2X2, Rows3, SlidersHorizontal } from 'lucide-react';
 import { BrowserRouter as Router, Routes, Route, Link, Navigate, useLocation, useSearchParams } from 'react-router-dom';
 import { ProductCard } from './components/ProductCard';
 import { Breadcrumbs, BreadcrumbItem } from './components/Breadcrumbs';
+import { UserMenu } from './components/UserMenu';
+import { CartMenu } from './components/CartMenu';
 import { Sidebar } from './components/Sidebar';
 import { useAgroApi } from './hooks/useAgroApi';
 import { AboutUs } from './pages/AboutUs';
@@ -10,6 +12,11 @@ import { Delivery } from './pages/Delivery';
 import { Contact } from './pages/Contact';
 import { Home } from './pages/Home';
 import { NotFound } from './pages/NotFound';
+import { ProductDetail } from './pages/ProductDetail';
+import { UserLayout } from './pages/user/UserLayout';
+import { UserInfoPage } from './pages/user/UserInfoPage';
+import { UserCartPage } from './pages/user/UserCartPage';
+import { UserOrdersPage } from './pages/user/UserOrdersPage';
 import { AdminLayout } from './admin/AdminLayout';
 import { ProductListPage } from './admin/ProductListPage';
 import { ProductFormPage } from './admin/ProductFormPage';
@@ -215,7 +222,7 @@ const MainShop: React.FC<{
 };
 
 const Storefront: React.FC = () => {
-  const { products, categories, cart, loading, addToCart } = useAgroApi();
+  const { products, categories, cart, loading, addToCart, removeFromCart } = useAgroApi();
   const location = useLocation();
   const [searchQuery, setSearchQuery] = useState('');
 
@@ -258,17 +265,9 @@ const Storefront: React.FC = () => {
             )}
 
             <div className="ml-auto flex shrink-0 items-center gap-1.5 sm:gap-4">
-              <button className="rounded-md p-2.5 text-white/70 transition-colors hover:bg-white/10 hover:text-white sm:p-3"><User size={20} /></button>
+              <UserMenu />
               <div className="mx-2 hidden h-8 w-px bg-white/15 sm:block" />
-              <div className="flex cursor-pointer items-center gap-2 rounded-md border border-white/20 bg-white/5 px-3 py-2.5 text-white transition-colors hover:bg-white/10 sm:gap-3 sm:px-5">
-                <ShoppingCart size={20} className="text-agro-200" />
-                <span className="hidden sm:inline font-black text-sm tracking-tight">{cart?.totalPrice.toLocaleString('sr-RS')} <small className="font-normal opacity-60">RSD</small></span>
-                {cart && cart.items.length > 0 && (
-                  <div className="-ml-1 flex h-5 w-5 items-center justify-center rounded-full bg-white text-[10px] text-agro-950">
-                    {cart.items.length}
-                  </div>
-                )}
-              </div>
+              <CartMenu cart={cart} products={products} />
             </div>
           </div>
         </nav>
@@ -286,9 +285,17 @@ const Storefront: React.FC = () => {
                   onSearchQueryChange={setSearchQuery}
                  />
               } />
+              <Route path="/proizvodi/:productId" element={
+                <ProductDetail products={products} categories={categories} onAddToCart={addToCart} />
+              } />
               <Route path="/o-nama" element={<AboutUs />} />
               <Route path="/dostava" element={<Delivery />} />
               <Route path="/kontakt" element={<Contact />} />
+              <Route path="/user" element={<UserLayout />}>
+                <Route index element={<UserInfoPage />} />
+                <Route path="cart" element={<UserCartPage cart={cart} products={products} onRemoveFromCart={removeFromCart} />} />
+                <Route path="orders" element={<UserOrdersPage />} />
+              </Route>
               <Route path="*" element={<NotFound />} />
             </Routes>
           </div>
