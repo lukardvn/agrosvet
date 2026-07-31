@@ -1,12 +1,15 @@
-﻿import React, { useState } from 'react';
-import { ShoppingCart, Sprout, Search, User, Facebook, Instagram, MapPin, ArrowUpDown, ChevronDown, Filter } from 'lucide-react';
-import { BrowserRouter as Router, Routes, Route, Link, Navigate, useLocation } from 'react-router-dom';
+﻿import React, { useEffect, useState } from 'react';
+import { ShoppingCart, Sprout, Search, User, Phone, MapPin, ChevronDown, Grid2X2, Rows3, SlidersHorizontal } from 'lucide-react';
+import { BrowserRouter as Router, Routes, Route, Link, Navigate, useLocation, useSearchParams } from 'react-router-dom';
 import { ProductCard } from './components/ProductCard';
+import { Breadcrumbs, BreadcrumbItem } from './components/Breadcrumbs';
 import { Sidebar } from './components/Sidebar';
 import { useAgroApi } from './hooks/useAgroApi';
 import { AboutUs } from './pages/AboutUs';
 import { Delivery } from './pages/Delivery';
 import { Contact } from './pages/Contact';
+import { Home } from './pages/Home';
+import { NotFound } from './pages/NotFound';
 import { AdminLayout } from './admin/AdminLayout';
 import { ProductListPage } from './admin/ProductListPage';
 import { ProductFormPage } from './admin/ProductFormPage';
@@ -18,16 +21,23 @@ type SortOption = 'name-asc' | 'name-desc' | 'price-asc' | 'price-desc' | 'defau
 const MainShop: React.FC<{ 
   products: any[], 
   categories: any[], 
-  cart: any, 
   addToCart: (id: number) => void, 
-  removeFromCart: (id: number) => void,
   searchQuery: string,
   onSearchQueryChange: (query: string) => void
-}> = ({ products, categories, cart, addToCart, removeFromCart, searchQuery, onSearchQueryChange }) => {
+}> = ({ products, categories, addToCart, searchQuery, onSearchQueryChange }) => {
+  const [searchParams] = useSearchParams();
+  const requestedCategory = searchParams.get('category');
   const [activeCategoryId, setActiveCategoryId] = useState<number | null>(null);
   const [priceRange, setPriceRange] = useState<[number, number]>([0, 10000]);
   const [sortOption, setSortOption] = useState<SortOption>('default');
   const [filtersOpen, setFiltersOpen] = useState(false);
+  const [filtersVisible, setFiltersVisible] = useState(true);
+  const [viewMode, setViewMode] = useState<'gallery' | 'list'>('gallery');
+
+  useEffect(() => {
+    const categoryId = Number(requestedCategory);
+    setActiveCategoryId(requestedCategory && Number.isInteger(categoryId) ? categoryId : null);
+  }, [requestedCategory]);
 
   const filteredProducts = products
     .filter(p => !activeCategoryId || p.categoryId === activeCategoryId)
@@ -43,85 +53,121 @@ const MainShop: React.FC<{
       }
     });
 
+  const activeCategoryName = activeCategoryId
+    ? categories.find(category => category.id === activeCategoryId)?.name
+    : undefined;
+  const breadcrumbItems: BreadcrumbItem[] = [
+    { label: 'Početna', to: '/' },
+    activeCategoryName || searchQuery
+      ? { label: 'Proizvodi', to: '/proizvodi' }
+      : { label: 'Proizvodi' },
+  ];
+  if (activeCategoryName) breadcrumbItems.push({ label: activeCategoryName });
+  else if (searchQuery) breadcrumbItems.push({ label: 'Rezultati pretrage' });
+
   return (
     <>
-      <div className="flex flex-1 flex-col items-stretch gap-5 pb-5 md:pb-10 lg:flex-row lg:items-start lg:gap-7">
-        <Sidebar 
-          className="hidden lg:flex"
-          categories={categories}
-          activeCategoryId={activeCategoryId}
-          onCategorySelect={setActiveCategoryId}
-          cart={cart}
-          onRemoveFromCart={removeFromCart}
-          priceRange={priceRange}
-          onPriceRangeChange={setPriceRange}
-        />
+      <div className="mb-6 pt-2 sm:mb-8">
+        <Breadcrumbs items={breadcrumbItems} />
+        <h2 className="mt-3 text-3xl font-normal tracking-tight text-agro-950 md:text-4xl">
+          {activeCategoryId
+            ? categories.find(c => c.id === activeCategoryId)?.name
+            : searchQuery
+              ? `Rezultati za "${searchQuery}"`
+              : 'Aktuelna ponuda'}
+        </h2>
+      </div>
+
+      <header className="mb-7 flex items-center justify-between gap-3 border-y border-agro-950/15 py-3">
+        <div className="flex items-center gap-4">
+          <button
+            onClick={() => setFiltersVisible(visible => !visible)}
+            className="hidden items-center gap-2 text-xs text-agro-950 transition-opacity hover:opacity-60 lg:flex"
+            aria-expanded={filtersVisible}
+          >
+            <SlidersHorizontal size={15} />
+            {filtersVisible ? 'Sakrij filtere' : 'Prikaži filtere'}
+          </button>
+          <button
+            onClick={() => setFiltersOpen(open => !open)}
+            className="flex items-center gap-2 text-xs text-agro-950 lg:hidden"
+            aria-expanded={filtersOpen}
+          >
+            <SlidersHorizontal size={15} />
+            Filteri
+          </button>
+          <span className="hidden h-4 w-px bg-agro-950/15 sm:block" />
+          <p className="hidden text-xs text-slate-500 sm:block">
+            {filteredProducts.length} {filteredProducts.length === 1 ? 'proizvod' : 'proizvoda'}
+          </p>
+        </div>
+
+        <div className="ml-auto flex items-center gap-4 sm:gap-6">
+          <div className="flex items-center gap-2">
+            <span className="hidden text-xs text-slate-500 sm:inline">Sortiraj po</span>
+            <div className="relative">
+              <select
+                value={sortOption}
+                onChange={(e) => setSortOption(e.target.value as SortOption)}
+                aria-label="Sortiraj proizvode"
+                className="h-8 appearance-none border-0 bg-transparent py-0 pl-1 pr-7 text-xs text-agro-950 outline-none"
+              >
+                <option value="default">Preporučeno</option>
+                <option value="price-asc">Ceni: Niža ka višoj</option>
+                <option value="price-desc">Ceni: Viša ka nižoj</option>
+                <option value="name-asc">Nazivu: A - Z</option>
+                <option value="name-desc">Nazivu: Z - A</option>
+              </select>
+              <ChevronDown size={12} className="pointer-events-none absolute right-1 top-1/2 -translate-y-1/2 text-slate-500" />
+            </div>
+          </div>
+
+          <div className="flex items-center gap-1 sm:gap-2">
+            <span className="hidden text-xs text-slate-500 md:inline">Prikaz</span>
+            <button
+              onClick={() => setViewMode('gallery')}
+              className={`p-1.5 transition-opacity ${viewMode === 'gallery' ? 'text-agro-950' : 'text-slate-300 hover:text-slate-500'}`}
+              aria-label="Prikaži kao galeriju"
+              aria-pressed={viewMode === 'gallery'}
+            >
+              <Grid2X2 size={16} />
+            </button>
+            <button
+              onClick={() => setViewMode('list')}
+              className={`p-1.5 transition-opacity ${viewMode === 'list' ? 'text-agro-950' : 'text-slate-300 hover:text-slate-500'}`}
+              aria-label="Prikaži kao listu"
+              aria-pressed={viewMode === 'list'}
+            >
+              <Rows3 size={18} />
+            </button>
+          </div>
+        </div>
+      </header>
+
+      <div className="flex flex-1 flex-col items-stretch gap-5 pb-5 md:pb-10 lg:flex-row lg:items-start lg:gap-8">
+        {filtersVisible && (
+          <Sidebar
+            className="hidden lg:flex"
+            categories={categories}
+            activeCategoryId={activeCategoryId}
+            onCategorySelect={setActiveCategoryId}
+            priceRange={priceRange}
+            onPriceRangeChange={setPriceRange}
+          />
+        )}
 
         <div className="flex-1 min-w-0">
-          <header className="mb-5 md:mb-10 flex items-end justify-between gap-3 md:gap-6">
-            <div>
-              <h2 className="text-2xl md:text-4xl font-black text-gray-900 tracking-tight">
-                {activeCategoryId 
-                  ? categories.find(c => c.id === activeCategoryId)?.name 
-                  : searchQuery 
-                    ? `Rezultati za "${searchQuery}"` 
-                    : 'Aktuelna Ponuda'}
-              </h2>
-            </div>
-            
-            <div className="flex shrink-0 items-end gap-2 sm:gap-6">
-              <button
-                onClick={() => setFiltersOpen(open => !open)}
-                className="surface-card flex h-11 w-11 items-center justify-center rounded-xl text-gray-500 transition-all hover:text-agro-600 lg:hidden"
-                aria-label="Prikaži filtere"
-                aria-expanded={filtersOpen}
-              >
-                <Filter size={16} />
-              </button>
-
-              <div className="relative h-11 w-11 sm:h-auto sm:w-auto">
-                <div className="hidden sm:flex items-center gap-2 text-xs font-black text-gray-400 uppercase tracking-widest mb-1.5 ml-1">
-                  <ArrowUpDown size={12} />
-                  <span>Sortiraj po</span>
-                </div>
-                <div className="relative">
-                  <select 
-                    value={sortOption}
-                    onChange={(e) => setSortOption(e.target.value as SortOption)}
-                    aria-label="Sortiraj proizvode"
-                    className="h-11 w-11 appearance-none bg-white border border-gray-100 p-0 rounded-xl text-xs font-bold text-transparent sm:w-full sm:pl-4 sm:pr-10 sm:py-2.5 sm:text-gray-700 focus:outline-none focus:ring-4 focus:ring-agro-500/10 focus:border-agro-200 transition-all cursor-pointer shadow-sm"
-                  >
-                    <option value="default">Preporučeno</option>
-                    <option value="price-asc">Ceni: Niža ka višoj</option>
-                    <option value="price-desc">Ceni: Viša ka nižoj</option>
-                    <option value="name-asc">Nazivu: A - Z</option>
-                    <option value="name-desc">Nazivu: Z - A</option>
-                  </select>
-                  <ArrowUpDown size={14} className="sm:hidden absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 text-gray-500 pointer-events-none" />
-                  <ChevronDown size={14} className="hidden sm:block absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
-                </div>
-              </div>
-
-              <div className="hidden sm:block text-sm font-bold text-gray-400 bg-white px-4 py-2.5 rounded-xl border border-gray-100 shadow-sm sm:self-end sm:mb-[1px]">
-                Prikazano <span className="text-gray-900">{filteredProducts.length}</span> proizvoda
-              </div>
-            </div>
-          </header>
-
           <div className="mb-6 lg:hidden">
             {filtersOpen && (
               <div className="space-y-4">
                 <Sidebar 
                   className="lg:hidden"
-                  showCart={false}
                   categories={categories}
                   activeCategoryId={activeCategoryId}
                   onCategorySelect={(id) => {
                     setActiveCategoryId(id);
                     setFiltersOpen(false);
                   }}
-                  cart={cart}
-                  onRemoveFromCart={removeFromCart}
                   priceRange={priceRange}
                   onPriceRangeChange={setPriceRange}
                 />
@@ -136,13 +182,16 @@ const MainShop: React.FC<{
           </div>
 
           {filteredProducts.length > 0 ? (
-            <div className="grid grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-3">
+            <div className={viewMode === 'gallery'
+              ? `grid grid-cols-1 gap-x-4 gap-y-10 sm:grid-cols-2 ${filtersVisible ? 'xl:grid-cols-3' : 'lg:grid-cols-3 xl:grid-cols-4'}`
+              : 'space-y-5'}>
               {filteredProducts.map(product => (
                 <ProductCard 
                   key={product.id}
                   product={product}
                   categoryName={categories.find(c => c.id === product.categoryId)?.name}
                   onAddToCart={addToCart}
+                  viewMode={viewMode}
                 />
               ))}
             </div>
@@ -166,9 +215,13 @@ const MainShop: React.FC<{
 };
 
 const Storefront: React.FC = () => {
-  const { products, categories, cart, loading, addToCart, removeFromCart } = useAgroApi();
+  const { products, categories, cart, loading, addToCart } = useAgroApi();
   const location = useLocation();
   const [searchQuery, setSearchQuery] = useState('');
+
+  useEffect(() => {
+    if (location.pathname !== '/proizvodi') setSearchQuery('');
+  }, [location.pathname]);
 
   if (loading) return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-agro-50 text-agro-600 gap-4">
@@ -178,26 +231,26 @@ const Storefront: React.FC = () => {
   );
 
   return (
-    <div className="min-h-screen bg-[#fafafa] flex flex-col font-sans selection:bg-agro-100 selection:text-agro-900">
-        <nav className="bg-white/80 backdrop-blur-md border-b border-gray-100 sticky top-0 z-50">
+    <div className="flex min-h-screen flex-col bg-white font-sans selection:bg-agro-200 selection:text-agro-950">
+        <nav className="sticky top-0 z-50 border-b border-white/10 bg-agro-900 text-white">
           <div className="container relative mx-auto flex flex-wrap items-center justify-between gap-3 px-4 py-3 sm:flex-nowrap sm:px-6 sm:py-4">
             <Link to="/" className="flex min-w-0 items-center gap-2 sm:gap-3 group cursor-pointer">
-              <div className="bg-agro-600 p-2 rounded-xl group-hover:rotate-12 transition-transform duration-300 shrink-0">
+              <div className="shrink-0 rounded-md border border-white/20 bg-white/10 p-2 transition-colors duration-300 group-hover:bg-white/15">
                 <Sprout size={24} className="text-white sm:w-7 sm:h-7" />
               </div>
               <div className="min-w-0">
-                <h1 className="text-lg sm:text-xl font-black text-gray-900 tracking-tighter">Agrosvet</h1>
-                <div className="hidden sm:block text-[9px] font-bold text-agro-600 uppercase tracking-widest -mt-1 opacity-80 truncate">Poljoprivredna Apoteka</div>
+                <h1 className="text-lg font-medium tracking-tight text-white sm:text-xl">Agrosvet</h1>
+                <div className="-mt-1 hidden truncate text-[9px] uppercase tracking-widest text-agro-200 sm:block">Poljoprivredna Apoteka</div>
               </div>
             </Link>
 
-            {location.pathname === '/' && (
+            {location.pathname === '/proizvodi' && (
               <div className="group relative order-3 w-full sm:order-none sm:mx-4 sm:max-w-xl sm:flex-1 lg:absolute lg:left-1/2 lg:top-1/2 lg:mx-0 lg:w-[min(42vw,36rem)] lg:max-w-none lg:-translate-x-1/2 lg:-translate-y-1/2">
-                <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-500 transition-colors group-focus-within:text-agro-700" size={17} />
+                <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 text-white/55 transition-colors group-focus-within:text-white" size={17} />
                 <input
                   type="search"
                   placeholder="Pretraži proizvode..."
-                  className="w-full rounded-xl border border-slate-300 bg-white py-2.5 pl-10 pr-4 text-sm font-medium shadow-sm outline-none transition-all placeholder:text-slate-400 hover:border-slate-400 focus:border-agro-400 focus:ring-4 focus:ring-agro-500/10"
+                  className="w-full rounded-md border border-white/20 bg-white/10 py-2.5 pl-10 pr-4 text-sm text-white outline-none transition-all placeholder:text-white/45 hover:border-white/30 hover:bg-white/15 focus:border-white/40 focus:bg-white/15 focus:ring-2 focus:ring-white/10"
                   value={searchQuery}
                   onChange={event => setSearchQuery(event.target.value)}
                 />
@@ -205,13 +258,13 @@ const Storefront: React.FC = () => {
             )}
 
             <div className="ml-auto flex shrink-0 items-center gap-1.5 sm:gap-4">
-              <button className="p-2.5 sm:p-3 text-gray-500 hover:text-agro-600 hover:bg-agro-50 rounded-xl transition-all"><User size={20} /></button>
-              <div className="hidden sm:block h-8 w-[1px] bg-gray-100 mx-2" />
-              <div className="flex items-center gap-2 sm:gap-3 bg-earth-950 text-white px-3 sm:px-5 py-2.5 rounded-2xl shadow-lg shadow-earth-900/20 hover:scale-105 active:scale-95 transition-all cursor-pointer">
-                <ShoppingCart size={20} className="text-earth-400" />
+              <button className="rounded-md p-2.5 text-white/70 transition-colors hover:bg-white/10 hover:text-white sm:p-3"><User size={20} /></button>
+              <div className="mx-2 hidden h-8 w-px bg-white/15 sm:block" />
+              <div className="flex cursor-pointer items-center gap-2 rounded-md border border-white/20 bg-white/5 px-3 py-2.5 text-white transition-colors hover:bg-white/10 sm:gap-3 sm:px-5">
+                <ShoppingCart size={20} className="text-agro-200" />
                 <span className="hidden sm:inline font-black text-sm tracking-tight">{cart?.totalPrice.toLocaleString('sr-RS')} <small className="font-normal opacity-60">RSD</small></span>
                 {cart && cart.items.length > 0 && (
-                  <div className="bg-agro-500 text-white text-[10px] w-5 h-5 rounded-lg flex items-center justify-center font-black border-2 border-earth-950 -ml-1">
+                  <div className="-ml-1 flex h-5 w-5 items-center justify-center rounded-full bg-white text-[10px] text-agro-950">
                     {cart.items.length}
                   </div>
                 )}
@@ -223,60 +276,59 @@ const Storefront: React.FC = () => {
         <main className="flex-1 py-4 md:py-5">
           <div className="container mx-auto px-4 sm:px-6">
             <Routes>
-              <Route path="/" element={
+              <Route path="/" element={<Home categories={categories} products={products} onAddToCart={addToCart} />} />
+              <Route path="/proizvodi" element={
                 <MainShop 
                   products={products} 
                   categories={categories} 
-                  cart={cart} 
-                   addToCart={addToCart}
-                   removeFromCart={removeFromCart}
-                   searchQuery={searchQuery}
-                   onSearchQueryChange={setSearchQuery}
+                  addToCart={addToCart}
+                  searchQuery={searchQuery}
+                  onSearchQueryChange={setSearchQuery}
                  />
               } />
               <Route path="/o-nama" element={<AboutUs />} />
               <Route path="/dostava" element={<Delivery />} />
               <Route path="/kontakt" element={<Contact />} />
+              <Route path="*" element={<NotFound />} />
             </Routes>
           </div>
         </main>
 
-        <footer className="bg-white border-t border-gray-100 py-12 mt-12">
-          <div className="container mx-auto px-6 grid grid-cols-1 md:grid-cols-4 gap-12 text-left">
+        <footer className={`${location.pathname === '/' ? '' : 'mt-12'} bg-agro-900 py-12 text-white`}>
+          <div className="container mx-auto grid grid-cols-1 gap-12 px-6 text-left md:grid-cols-4">
             <div className="col-span-2">
               <Link to="/" className="flex items-center gap-2 mb-6">
-                <div className="bg-agro-600 p-1.5 rounded-lg"><Sprout size={20} className="text-white" /></div>
-                <span className="font-black text-xl tracking-tighter text-gray-900 font-bold">Agrosvet</span>
+                <div className="rounded-md border border-white/20 bg-white/10 p-1.5"><Sprout size={20} className="text-white" /></div>
+                <span className="text-xl font-medium tracking-tight text-white">Agrosvet</span>
               </Link>
-              <p className="text-gray-500 text-sm leading-relaxed max-w-sm">
+              <p className="max-w-sm text-sm leading-relaxed text-white/60">
                 Vaš pouzdan partner u poljoprivredi. Nudimo najkvalitetnija semena, đubriva i zaštitna sredstva za vaše gazdinstvo. 
               </p>
             </div>
             <div>
-              <h4 className="font-black text-xs uppercase tracking-widest text-gray-900 mb-6 font-bold">Korisni Linkovi</h4>
-              <ul className="space-y-3 text-sm font-medium text-gray-500">
-                <li><Link to="/o-nama" className="hover:text-agro-600 transition-colors">O Nama</Link></li>
-                <li><Link to="/dostava" className="hover:text-agro-600 transition-colors">Dostava</Link></li>
-                <li><Link to="/kontakt" className="hover:text-agro-600 transition-colors">Kontakt</Link></li>
+              <h4 className="mb-6 text-xs font-medium uppercase tracking-widest text-white">Korisni linkovi</h4>
+              <ul className="space-y-3 text-sm text-white/60">
+                <li><Link to="/o-nama" className="transition-colors hover:text-white">O nama</Link></li>
+                <li><Link to="/dostava" className="transition-colors hover:text-white">Dostava</Link></li>
+                <li><Link to="/kontakt" className="transition-colors hover:text-white">Kontakt</Link></li>
               </ul>
             </div>
             <div>
-              <h4 className="font-black text-xs uppercase tracking-widest text-gray-900 mb-6 font-bold">Pratite Nas</h4>
-              <div className="flex gap-4">
-                <a href="https://facebook.com" target="_blank" rel="noopener noreferrer" className="w-10 h-10 bg-gray-50 rounded-xl hover:bg-blue-50 hover:text-blue-600 flex items-center justify-center transition-all shadow-sm">
-                  <Facebook size={20} />
+              <h4 className="mb-6 text-xs font-medium uppercase tracking-widest text-white">Kontakt</h4>
+              <div className="space-y-3 text-sm text-white/70">
+                <a href="tel:+381216465745" className="flex items-center gap-3 transition-colors hover:text-white">
+                  <Phone size={17} />
+                  021 646 5745
                 </a>
-                <a href="https://instagram.com" target="_blank" rel="noopener noreferrer" className="w-10 h-10 bg-gray-50 rounded-xl hover:bg-pink-50 hover:text-pink-600 flex items-center justify-center transition-all shadow-sm">
-                  <Instagram size={20} />
-                </a>
-                <a href="https://maps.app.goo.gl/mTvci45HF6YFZW1UA" target="_blank" rel="noopener noreferrer" className="w-10 h-10 bg-gray-50 rounded-xl hover:bg-agro-50 hover:text-agro-600 flex items-center justify-center transition-all shadow-sm">
-                  <MapPin size={20} />
+                <a href="https://maps.app.goo.gl/x4M6M59VRSuLPY8KA" target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 transition-colors hover:text-white">
+                  <MapPin size={17} />
+                  Google mape
                 </a>
               </div>
             </div>
           </div>
-          <div className="container mx-auto px-6 mt-12 pt-8 border-t border-gray-50 text-center text-[10px] font-bold text-gray-400 uppercase tracking-widest">
-            © 2024 Agrosvet Poljoprivredna Apoteka. Sva prava zadržana.
+          <div className="container mx-auto mt-12 border-t border-white/10 px-6 pt-8 text-center text-[10px] uppercase tracking-widest text-white/40">
+            © {new Date().getFullYear()} Agrosvet Poljoprivredna Apoteka. Sva prava zadržana.
           </div>
         </footer>
     </div>

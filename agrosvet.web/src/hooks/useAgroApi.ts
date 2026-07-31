@@ -1,8 +1,6 @@
-﻿import { useState, useEffect } from 'react';
-import { Product, Category, Cart } from '../types';
-import { adminApi } from '../services/adminApi';
-
-const API_URL = 'http://localhost:5000';
+﻿import { useEffect, useState } from "react";
+import { API_URL, apiRequest } from "../services/apiClient";
+import { Cart, Category, Product } from "../types";
 
 export const useAgroApi = () => {
   const [products, setProducts] = useState<Product[]>([]);
@@ -14,15 +12,15 @@ export const useAgroApi = () => {
     const fetchData = async () => {
       try {
         const [productData, categoryData] = await Promise.all([
-          adminApi.getProducts(),
-          adminApi.getCategories(),
+          apiRequest<Product[]>("/products"),
+          apiRequest<Category[]>("/categories"),
         ]);
-        setProducts(productData.filter(product => product.status === 'active'));
+        setProducts(productData);
         setCategories(categoryData);
 
         try {
           const cartResponse = await fetch(`${API_URL}/cart/1`);
-          if (!cartResponse.ok) throw new Error('Cart request failed');
+          if (!cartResponse.ok) throw new Error("Cart request failed");
           setCart(await cartResponse.json());
         } catch {
           setCart({ id: 1, items: [], totalPrice: 0 });
@@ -37,15 +35,18 @@ export const useAgroApi = () => {
   }, []);
 
   const addToCart = async (productId: number) => {
-    const res = await fetch(`${API_URL}/cart/1/items?cartId=1&productId=${productId}&quantity=1`, {
-      method: 'POST'
-    });
+    const res = await fetch(
+      `${API_URL}/cart/1/items?cartId=1&productId=${productId}&quantity=1`,
+      {
+        method: "POST",
+      },
+    );
     setCart(await res.json());
   };
 
   const removeFromCart = async (productId: number) => {
     const res = await fetch(`${API_URL}/cart/1/items/${productId}`, {
-      method: 'DELETE'
+      method: "DELETE",
     });
     setCart(await res.json());
   };

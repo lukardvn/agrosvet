@@ -24,7 +24,7 @@ export const CategoryListPage = () => {
   }, new Map<number, number>());
 
   return (
-    <div className="mx-auto max-w-5xl">
+    <div className="mx-auto max-w-7xl">
       <header className="mb-7 flex flex-col gap-5 sm:mb-9 sm:flex-row sm:items-end sm:justify-between">
         <div>
           <h1 className="text-2xl font-black tracking-tight text-slate-950 sm:text-3xl">Kategorije</h1>

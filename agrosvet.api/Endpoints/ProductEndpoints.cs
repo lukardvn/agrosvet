@@ -18,24 +18,36 @@ public static class ProductEndpoints
 
     public static void MapProductEndpoints(this IEndpointRouteBuilder app)
     {
-        var group = app.MapGroup("/products");
+        var publicGroup = app.MapGroup("/products");
+        var adminGroup = app.MapGroup("/admin/products");
 
-        group.MapGet("/", (IProductService productService) =>
-            Results.Ok(productService.GetAllProducts().Select(product => product.ToDto())))
+        publicGroup.MapGet("/", (IProductService productService) =>
+            Results.Ok(productService.GetActiveProducts().Select(product => product.ToDto())))
         .WithName("GetProducts");
 
-        group.MapGet("/{id}", (int id, IProductService productService) =>
+        publicGroup.MapGet("/{id}", (int id, IProductService productService) =>
         {
-            var product = productService.GetProductById(id);
+            var product = productService.GetActiveProductById(id);
             return product is not null ? Results.Ok(product.ToDto()) : Results.NotFound();
         })
         .WithName("GetProductById");
 
-        group.MapGet("/category/{categoryId}", (int categoryId, IProductService productService) =>
-            Results.Ok(productService.GetProductsByCategory(categoryId).Select(product => product.ToDto())))
+        publicGroup.MapGet("/category/{categoryId}", (int categoryId, IProductService productService) =>
+            Results.Ok(productService.GetActiveProductsByCategory(categoryId).Select(product => product.ToDto())))
         .WithName("GetProductsByCategory");
 
-        group.MapPost("/", async (
+        adminGroup.MapGet("/", (IProductService productService) =>
+            Results.Ok(productService.GetAllProducts().Select(product => product.ToDto())))
+        .WithName("GetAdminProducts");
+
+        adminGroup.MapGet("/{id}", (int id, IProductService productService) =>
+        {
+            var product = productService.GetProductById(id);
+            return product is not null ? Results.Ok(product.ToDto()) : Results.NotFound();
+        })
+        .WithName("GetAdminProductById");
+
+        adminGroup.MapPost("/", async (
             [FromForm] ProductUpsertRequest request,
             IProductService productService,
             ICategoryService categoryService,
@@ -49,12 +61,12 @@ public static class ProductEndpoints
                 product,
                 request.Image,
                 cancellationToken);
-            return Results.Created($"/products/{createdProduct.Id}", createdProduct.ToDto());
+            return Results.Created($"/admin/products/{createdProduct.Id}", createdProduct.ToDto());
         })
         .DisableAntiforgery()
         .WithName("CreateProduct");
 
-        group.MapPut("/{id}", async (
+        adminGroup.MapPut("/{id}", async (
             int id,
             [FromForm] ProductUpsertRequest request,
             IProductService productService,
@@ -76,7 +88,7 @@ public static class ProductEndpoints
         .DisableAntiforgery()
         .WithName("UpdateProduct");
 
-        group.MapDelete("/{id}", async (
+        adminGroup.MapDelete("/{id}", async (
             int id,
             IProductService productService,
             CancellationToken cancellationToken) =>

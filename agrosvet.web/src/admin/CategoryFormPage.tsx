@@ -84,7 +84,7 @@ export const CategoryFormPage = () => {
   const inputClass = 'mt-2 w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm outline-none transition focus:border-agro-400 focus:bg-white focus:ring-4 focus:ring-agro-100';
 
   return (
-    <div className="mx-auto max-w-3xl">
+    <div className="mx-auto max-w-5xl">
       <Link to="/admin/categories" className="mb-6 inline-flex items-center gap-2 text-sm font-bold text-slate-500 transition hover:text-agro-700">
         <ArrowLeft size={17} /> Nazad na kategorije
       </Link>
