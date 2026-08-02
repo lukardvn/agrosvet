@@ -1,9 +1,10 @@
-﻿# GitIgnore for a .NET and React project
+# GitIgnore for a .NET and React project
 
 # .NET specific ignores
 ## Build results
 [Dd]ebug/
 [Rr]elease/
+[Oo]bj/
 *.suo
 *.user
 *.userosscache
