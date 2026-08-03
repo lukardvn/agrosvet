@@ -38,6 +38,10 @@
     @apply absolute inset-0 h-full w-full object-cover;
   }
 
+  .hero-cutout-image {
+    filter: url('#hero-edge-feather');
+  }
+
   .admin-shell .font-black {
     font-weight: 450;
   }

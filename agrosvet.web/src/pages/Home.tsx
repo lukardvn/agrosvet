@@ -44,6 +44,12 @@ export const Home = ({ categories, products, onAddToCart }: HomeProps) => {
           </div>
 
           <div className="relative min-h-[520px] overflow-hidden lg:z-10 lg:min-h-0 lg:overflow-visible">
+            <svg className="absolute h-0 w-0" aria-hidden="true">
+              <filter id="hero-edge-feather" x="-2%" y="-2%" width="104%" height="104%" colorInterpolationFilters="sRGB">
+                <feGaussianBlur in="SourceAlpha" stdDeviation="1.4" result="softAlpha" />
+                <feComposite in="SourceGraphic" in2="softAlpha" operator="in" />
+              </filter>
+            </svg>
             <img
               src="/images/agrosvet-bg.jpg"
               alt="Tamno zeleno lišće kolokazije"
@@ -52,7 +58,7 @@ export const Home = ({ categories, products, onAddToCart }: HomeProps) => {
             <img
               src="/images/agrosvet-bg-cut.png"
               alt="Tamno zeleno lišće kolokazije"
-              className="pointer-events-none absolute inset-y-0 left-0 hidden h-full w-auto max-w-none lg:block"
+              className="hero-cutout-image pointer-events-none absolute inset-y-0 left-0 hidden h-full w-auto max-w-none lg:block"
             />
           </div>
 
