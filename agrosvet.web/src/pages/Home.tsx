@@ -18,8 +18,7 @@ const categoryImages = [
 ];
 
 export const Home = ({ categories, products, onAddToCart }: HomeProps) => {
-  const topLevelCategories = categories.filter(category => category.parentId === null);
-  const visibleCategories = topLevelCategories.length > 0 ? topLevelCategories : categories;
+  const visibleCategories = categories.filter(category => category.parentId == null).slice(0, 4);
   const [featuredProducts] = useState(() => [...products].sort(() => Math.random() - 0.5).slice(0, 4));
 
   return (

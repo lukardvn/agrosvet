@@ -35,7 +35,7 @@ export default {
         }
       },
       fontFamily: {
-        sans: ['Nunito Sans', 'system-ui', 'sans-serif'],
+        sans: ['Inter', 'system-ui', 'sans-serif'],
       },
       fontWeight: {
         bold: '450',
