@@ -225,11 +225,25 @@ const MainShop: React.FC<{
 const Storefront: React.FC = () => {
   const { products, categories, cart, loading, addToCart, removeFromCart } = useAgroApi();
   const location = useLocation();
+  const isHome = location.pathname === '/';
   const [searchQuery, setSearchQuery] = useState('');
+  const [headerScrolled, setHeaderScrolled] = useState(false);
 
   useEffect(() => {
     if (location.pathname !== '/proizvodi') setSearchQuery('');
   }, [location.pathname]);
+
+  useEffect(() => {
+    if (!isHome) {
+      setHeaderScrolled(false);
+      return;
+    }
+
+    const updateHeader = () => setHeaderScrolled(window.scrollY > 24);
+    updateHeader();
+    window.addEventListener('scroll', updateHeader, { passive: true });
+    return () => window.removeEventListener('scroll', updateHeader);
+  }, [isHome]);
 
   if (loading) return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-agro-50 text-agro-600 gap-4">
@@ -240,15 +254,15 @@ const Storefront: React.FC = () => {
 
   return (
     <div className="flex min-h-screen flex-col bg-white font-sans selection:bg-agro-200 selection:text-agro-950">
-        <nav className="sticky top-0 z-50 border-b border-white/10 bg-agro-900 text-white">
+        <nav className={`${isHome ? `fixed inset-x-0 top-0 border-b text-agro-950 transition-[background-color,border-color,box-shadow] duration-300 ${headerScrolled ? 'border-slate-900/10 bg-white/80 shadow-sm shadow-slate-950/5 backdrop-blur-xl' : 'border-transparent bg-transparent'}` : 'sticky top-0 border-b border-white/10 bg-agro-900 text-white'} z-50`}>
           <div className="container relative mx-auto flex flex-wrap items-center justify-between gap-3 px-4 py-3 sm:flex-nowrap sm:px-6 sm:py-4">
             <Link to="/" className="flex min-w-0 items-center gap-2 sm:gap-3 group cursor-pointer">
-              <div className="shrink-0 rounded-md border border-white/20 bg-white/10 p-2 transition-colors duration-300 group-hover:bg-white/15">
-                <Sprout size={24} className="text-white sm:w-7 sm:h-7" />
+              <div className={`shrink-0 rounded-md p-2 transition-colors duration-300 ${isHome ? 'group-hover:bg-white/25' : 'border border-white/20 bg-white/10 group-hover:bg-white/15'}`}>
+                <Sprout size={24} className={`${isHome ? 'text-agro-950' : 'text-white'} sm:w-7 sm:h-7`} />
               </div>
               <div className="min-w-0">
-                <h1 className="text-lg font-medium tracking-tight text-white sm:text-xl">Agrosvet</h1>
-                <div className="-mt-1 hidden truncate text-[9px] uppercase tracking-widest text-agro-200 sm:block">Poljoprivredna Apoteka</div>
+                <h1 className={`text-lg font-medium tracking-tight sm:text-xl ${isHome ? 'text-agro-950' : 'text-white'}`}>Agrosvet</h1>
+                <div className={`-mt-1 hidden truncate text-[9px] uppercase tracking-widest sm:block ${isHome ? 'text-agro-950/60' : 'text-agro-200'}`}>Poljoprivredna Apoteka</div>
               </div>
             </Link>
 
@@ -266,14 +280,14 @@ const Storefront: React.FC = () => {
             )}
 
             <div className="ml-auto flex shrink-0 items-center gap-1.5 sm:gap-4">
-              <UserMenu />
-              <div className="mx-2 hidden h-8 w-px bg-white/15 sm:block" />
-              <CartMenu cart={cart} products={products} />
+              <UserMenu dark={isHome} />
+              <div className={`mx-2 hidden h-8 w-px sm:block ${isHome ? 'bg-agro-950/15' : 'bg-white/15'}`} />
+              <CartMenu cart={cart} products={products} dark={isHome} />
             </div>
           </div>
         </nav>
 
-        <main className="flex-1 py-4 md:py-5">
+        <main className={`flex-1 ${isHome ? 'py-0' : 'py-4 md:py-5'}`}>
           <div className="container mx-auto px-4 sm:px-6">
             <Routes>
               <Route path="/" element={<Home categories={categories} products={products} onAddToCart={addToCart} />} />

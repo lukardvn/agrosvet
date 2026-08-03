@@ -23,9 +23,9 @@ export const Home = ({ categories, products, onAddToCart }: HomeProps) => {
 
   return (
     <>
-      <section className="relative left-1/2 right-1/2 -ml-[50vw] -mr-[50vw] -mt-4 w-screen overflow-hidden bg-[#f5f5ef] md:-mt-5">
+      <section className="relative left-1/2 right-1/2 -ml-[50vw] -mr-[50vw] w-screen overflow-hidden bg-[#f5f5ef]">
         <div className="container mx-auto grid min-h-[570px] lg:grid-cols-[0.9fr_1.1fr]">
-          <div className="flex items-center px-4 py-14 sm:px-6 sm:py-20 lg:py-24 lg:pr-14">
+          <div className="flex items-center px-4 pb-14 pt-28 sm:px-6 sm:pb-20 sm:pt-32 lg:py-24 lg:pr-14">
             <div className="max-w-xl">
               <h1 className="text-4xl font-normal leading-[1.08] tracking-tight text-agro-950 sm:text-5xl lg:text-6xl">
                 Pouzdana rešenja za svaku sezonu.

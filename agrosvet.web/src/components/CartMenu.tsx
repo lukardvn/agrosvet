@@ -5,9 +5,10 @@ import { Cart, Product } from '../types';
 interface CartMenuProps {
   cart: Cart | null;
   products: Product[];
+  dark?: boolean;
 }
 
-export const CartMenu = ({ cart, products }: CartMenuProps) => {
+export const CartMenu = ({ cart, products, dark = false }: CartMenuProps) => {
   const itemCount = cart?.items.reduce((total, item) => total + item.quantity, 0) ?? 0;
 
   return (
@@ -15,12 +16,12 @@ export const CartMenu = ({ cart, products }: CartMenuProps) => {
       <Link
         to="/user/cart"
         aria-label="Korpa"
-        className="flex items-center gap-2 rounded-md border border-white/20 bg-white/5 px-3 py-2.5 text-white transition-colors hover:bg-white/10 sm:gap-3 sm:px-5"
+        className={`flex items-center gap-2 rounded-md border px-3 py-2.5 transition-colors sm:gap-3 sm:px-5 ${dark ? 'border-agro-950/20 bg-white/15 text-agro-950 hover:bg-white/30' : 'border-white/20 bg-white/5 text-white hover:bg-white/10'}`}
       >
-        <ShoppingCart size={20} className="text-agro-200" />
+        <ShoppingCart size={20} className={dark ? 'text-agro-950/75' : 'text-agro-200'} />
         <span className="hidden text-sm sm:inline">{cart?.totalPrice.toLocaleString('sr-RS') ?? 0} <small className="opacity-60">RSD</small></span>
         {itemCount > 0 && (
-          <span className="-ml-1 flex h-5 min-w-5 items-center justify-center rounded-full bg-white px-1 text-[10px] text-agro-950">{itemCount}</span>
+          <span className={`-ml-1 flex h-5 min-w-5 items-center justify-center rounded-full px-1 text-[10px] ${dark ? 'bg-agro-950 text-white' : 'bg-white text-agro-950'}`}>{itemCount}</span>
         )}
       </Link>
 

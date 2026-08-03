@@ -7,12 +7,12 @@ const menuItems = [
   { to: '/user/orders', label: 'Porudžbine', icon: ClipboardList },
 ];
 
-export const UserMenu = () => (
+export const UserMenu = ({ dark = false }: { dark?: boolean }) => (
   <div className="group relative">
     <Link
       to="/user"
       aria-label="Korisnički meni"
-      className="block rounded-md p-2.5 text-white/70 transition-colors hover:bg-white/10 hover:text-white sm:p-3"
+      className={`block rounded-md p-2.5 transition-colors sm:p-3 ${dark ? 'text-agro-950/75 hover:bg-white/25 hover:text-agro-950' : 'text-white/70 hover:bg-white/10 hover:text-white'}`}
     >
       <UserRound size={20} />
     </Link>
