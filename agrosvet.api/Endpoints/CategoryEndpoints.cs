@@ -1,6 +1,7 @@
 using Agrosvet.Api.Contracts;
 using Agrosvet.Api.Models;
 using Agrosvet.Api.Services;
+using Microsoft.EntityFrameworkCore;
 
 namespace Agrosvet.Api.Endpoints;
 
@@ -68,8 +69,20 @@ public static class CategoryEndpoints
 
         adminGroup.MapDelete("/{id}", (int id, ICategoryService categoryService) =>
         {
-            var success = categoryService.DeleteCategory(id);
-            return success ? Results.NoContent() : Results.NotFound();
+            try
+            {
+                var success = categoryService.DeleteCategory(id);
+                return success
+                    ? Results.NoContent()
+                    : Results.NotFound();
+            }
+            catch (DbUpdateException)
+            {
+                return Results.Conflict(new
+                {
+                    Detail = "Kategorija ne može da se obriše dok sadrži proizvode ili podkategorije."
+                });
+            }
         })
         .WithName("DeleteCategory");
     }

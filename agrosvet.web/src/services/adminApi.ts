@@ -36,6 +36,11 @@ export const adminApi = {
       body: productFormData(input),
     }),
 
+  deleteProduct: (id: number) =>
+    apiRequest<void>(`/admin/products/${id}`, {
+      method: 'DELETE',
+    }),
+
   getCategories: () => apiRequest<Category[]>('/categories'),
 
   async getCategory(id: number): Promise<Category | null> {
@@ -59,5 +64,10 @@ export const adminApi = {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(input),
+    }),
+
+  deleteCategory: (id: number) =>
+    apiRequest<void>(`/admin/categories/${id}`, {
+      method: 'DELETE',
     }),
 };

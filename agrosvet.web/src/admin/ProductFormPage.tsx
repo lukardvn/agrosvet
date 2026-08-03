@@ -1,6 +1,7 @@
 import { FormEvent, useEffect, useState } from 'react';
-import { ArrowLeft, Check, ImageOff, LoaderCircle, Upload } from 'lucide-react';
+import { ArrowLeft, Check, ImageOff, LoaderCircle, Trash2, Upload } from 'lucide-react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
+import { ConfirmDialog } from '../components/ConfirmDialog';
 import { adminApi } from '../services/adminApi';
 import { Category } from '../types';
 import { orderCategories } from './categoryTree';
@@ -30,6 +31,8 @@ export const ProductFormPage = () => {
   const [errors, setErrors] = useState<Partial<Record<keyof ProductFormState, string>>>({});
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [pageError, setPageError] = useState('');
   const [imageFailed, setImageFailed] = useState(false);
 
@@ -124,6 +127,23 @@ export const ProductFormPage = () => {
     }
   };
 
+  const handleDelete = async () => {
+    setDeleting(true);
+    setPageError('');
+    try {
+      await adminApi.deleteProduct(Number(productId));
+      snackbar.success('Proizvod je obrisan.');
+      navigate('/admin/products');
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Proizvod trenutno ne može da se obriše.';
+      setPageError(message);
+      snackbar.error(message, { title: 'Proizvod nije obrisan' });
+    } finally {
+      setDeleting(false);
+      setDeleteDialogOpen(false);
+    }
+  };
+
   if (loading) return <div className="py-24 text-center text-sm font-bold text-slate-400">Učitavanje proizvoda...</div>;
 
   if (pageError && isEditing && !form.name) {
@@ -212,13 +232,34 @@ export const ProductFormPage = () => {
           </div>
 
           {pageError && <p className="rounded-xl bg-red-50 p-3 text-sm font-bold text-red-700">{pageError}</p>}
-          <button disabled={saving || !hasChanges} className="flex w-full items-center justify-center gap-2 rounded-xl px-5 py-3.5 text-sm font-black transition active:scale-[0.98] disabled:cursor-not-allowed disabled:bg-slate-200 disabled:text-slate-400 enabled:bg-agro-600 enabled:text-white enabled:shadow-lg enabled:shadow-agro-900/15 enabled:hover:bg-agro-700">
+          <button disabled={saving || deleting || !hasChanges} className="flex w-full items-center justify-center gap-2 rounded-xl px-5 py-3.5 text-sm font-black transition active:scale-[0.98] disabled:cursor-not-allowed disabled:bg-slate-200 disabled:text-slate-400 enabled:bg-agro-600 enabled:text-white enabled:shadow-lg enabled:shadow-agro-900/15 enabled:hover:bg-agro-700">
             {saving ? <LoaderCircle className="animate-spin" size={18} /> : <Check size={18} />}
             {saving ? 'Čuvanje...' : hasChanges ? 'Sačuvaj izmene' : 'Nema izmena'}
           </button>
           <Link to="/admin/products" className="block w-full rounded-xl px-5 py-3 text-center text-sm font-black text-slate-500 transition hover:bg-slate-200/60">Otkaži</Link>
+          {isEditing && (
+            <button
+              type="button"
+              onClick={() => setDeleteDialogOpen(true)}
+              disabled={saving || deleting}
+              className="flex w-full items-center justify-center gap-2 rounded-xl px-5 py-3 text-sm font-black text-red-600 transition hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-60"
+            >
+              {deleting ? <LoaderCircle className="animate-spin" size={18} /> : <Trash2 size={18} />}
+              {deleting ? 'Brisanje...' : 'Obriši proizvod'}
+            </button>
+          )}
         </aside>
       </form>
+      <ConfirmDialog
+        open={deleteDialogOpen}
+        title="Obriši proizvod?"
+        description={<>Proizvod <strong className="font-black text-slate-700">{form.name}</strong> biće trajno obrisan. Ovu radnju nije moguće poništiti.</>}
+        confirmLabel="Obriši proizvod"
+        variant="danger"
+        loading={deleting}
+        onCancel={() => setDeleteDialogOpen(false)}
+        onConfirm={handleDelete}
+      />
     </div>
   );
 };

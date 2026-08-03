@@ -1,16 +1,21 @@
 import { useEffect, useState } from 'react';
-import { ArrowRight, Boxes, ImageOff, Plus, Search } from 'lucide-react';
+import { Boxes, ImageOff, Plus, Search, Trash2 } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
+import { ConfirmDialog } from '../components/ConfirmDialog';
+import { useSnackbar } from '../components/SnackbarProvider';
 import { adminApi } from '../services/adminApi';
 import { Category, Product } from '../types';
 
 export const ProductListPage = () => {
   const navigate = useNavigate();
+  const snackbar = useSnackbar();
   const [products, setProducts] = useState<Product[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [deletingId, setDeletingId] = useState<number | null>(null);
+  const [productToDelete, setProductToDelete] = useState<Product | null>(null);
 
   useEffect(() => {
     Promise.all([adminApi.getProducts(), adminApi.getCategories()])
@@ -21,6 +26,23 @@ export const ProductListPage = () => {
       .catch(() => setError('Proizvodi trenutno ne mogu da se učitaju.'))
       .finally(() => setLoading(false));
   }, []);
+
+  const deleteProduct = async (product: Product) => {
+    setDeletingId(product.id);
+    try {
+      await adminApi.deleteProduct(product.id);
+      setProducts(current => current.filter(item => item.id !== product.id));
+      snackbar.success('Proizvod je obrisan.');
+    } catch (requestError) {
+      const message = requestError instanceof Error
+        ? requestError.message
+        : 'Proizvod trenutno ne može da se obriše.';
+      snackbar.error(message, { title: 'Proizvod nije obrisan' });
+    } finally {
+      setDeletingId(null);
+      setProductToDelete(null);
+    }
+  };
 
   const categoryNames = new Map(categories.map(category => [category.id, category.name]));
   const normalizedQuery = searchQuery.trim().toLocaleLowerCase('sr');
@@ -77,7 +99,7 @@ export const ProductListPage = () => {
                     <th className="px-5 py-3">Kategorija</th>
                     <th className="px-5 py-3">Status</th>
                     <th className="px-5 py-3 text-right">Cena</th>
-                    <th className="w-16 px-5 py-3"><span className="sr-only">Uredi</span></th>
+                      <th className="w-16 px-5 py-3"><span className="sr-only">Akcije</span></th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100">
@@ -111,9 +133,19 @@ export const ProductListPage = () => {
                       </td>
                       <td className="whitespace-nowrap px-5 py-3 text-right font-black text-slate-900">{product.price.toLocaleString('sr-RS')} <span className="text-xs font-bold text-slate-400">RSD</span></td>
                       <td className="px-5 py-3">
-                        <span className="flex h-9 w-9 items-center justify-center rounded-lg text-slate-400 transition group-hover:bg-white group-hover:text-agro-700 group-hover:shadow-sm">
-                          <ArrowRight size={18} />
-                        </span>
+                        <div className="flex items-center justify-end gap-1">
+                          <button
+                            type="button"
+                            onClick={event => { event.stopPropagation(); setProductToDelete(product); }}
+                            onKeyDown={event => event.stopPropagation()}
+                            disabled={deletingId !== null}
+                            aria-label={`Obriši proizvod ${product.name}`}
+                            title="Obriši proizvod"
+                            className="flex h-9 w-9 items-center justify-center rounded-lg text-slate-400 transition hover:bg-red-50 hover:text-red-600 disabled:cursor-not-allowed disabled:opacity-40"
+                          >
+                            <Trash2 size={17} />
+                          </button>
+                        </div>
                       </td>
                     </tr>
                   ))}
@@ -123,27 +155,48 @@ export const ProductListPage = () => {
 
             <div className="divide-y divide-slate-100 md:hidden">
               {filteredProducts.map(product => (
-                <Link key={product.id} to={`/admin/products/${product.id}/edit`} className="flex gap-3 p-4 transition-colors hover:bg-agro-50">
-                  <div className="h-16 w-16 shrink-0 overflow-hidden rounded-xl bg-slate-100">
-                    {product.imageUrl ? <img src={product.imageUrl} alt="" className="h-full w-full object-cover" /> : <ImageOff className="m-5 text-slate-300" />}
-                  </div>
-                  <div className="min-w-0 flex-1">
-                    <p className="truncate font-black text-slate-900">{product.name}</p>
-                    <p className="mt-1 text-xs font-bold text-agro-700">{categoryNames.get(product.categoryId) ?? 'Bez kategorije'}</p>
-                    <div className="mt-2 flex items-center gap-2">
-                      <p className="font-black">{product.price.toLocaleString('sr-RS')} <span className="text-xs text-slate-400">RSD</span></p>
-                      <span className={`rounded-full px-2 py-0.5 text-[9px] font-black uppercase tracking-wider ${product.status === 'active' ? 'bg-agro-100 text-agro-800' : 'bg-slate-100 text-slate-500'}`}>
-                        {product.status === 'active' ? 'Aktivan' : 'Neaktivan'}
-                      </span>
+                <div key={product.id} className="flex items-center transition-colors hover:bg-agro-50">
+                  <Link to={`/admin/products/${product.id}/edit`} className="flex min-w-0 flex-1 gap-3 p-4 pr-2">
+                    <div className="h-16 w-16 shrink-0 overflow-hidden rounded-xl bg-slate-100">
+                      {product.imageUrl ? <img src={product.imageUrl} alt="" className="h-full w-full object-cover" /> : <ImageOff className="m-5 text-slate-300" />}
                     </div>
-                  </div>
-                  <ArrowRight className="mt-6 shrink-0 text-slate-300" size={18} />
-                </Link>
+                    <div className="min-w-0 flex-1">
+                      <p className="truncate font-black text-slate-900">{product.name}</p>
+                      <p className="mt-1 text-xs font-bold text-agro-700">{categoryNames.get(product.categoryId) ?? 'Bez kategorije'}</p>
+                      <div className="mt-2 flex items-center gap-2">
+                        <p className="font-black">{product.price.toLocaleString('sr-RS')} <span className="text-xs text-slate-400">RSD</span></p>
+                        <span className={`rounded-full px-2 py-0.5 text-[9px] font-black uppercase tracking-wider ${product.status === 'active' ? 'bg-agro-100 text-agro-800' : 'bg-slate-100 text-slate-500'}`}>
+                          {product.status === 'active' ? 'Aktivan' : 'Neaktivan'}
+                        </span>
+                      </div>
+                    </div>
+                  </Link>
+                  <button
+                    type="button"
+                    onClick={() => setProductToDelete(product)}
+                    disabled={deletingId !== null}
+                    aria-label={`Obriši proizvod ${product.name}`}
+                    title="Obriši proizvod"
+                    className="mr-3 flex h-10 w-10 shrink-0 items-center justify-center rounded-lg text-slate-400 transition hover:bg-red-50 hover:text-red-600 disabled:cursor-not-allowed disabled:opacity-40"
+                  >
+                    <Trash2 size={17} />
+                  </button>
+                </div>
               ))}
             </div>
           </>
         )}
       </section>
+      <ConfirmDialog
+        open={productToDelete !== null}
+        title="Obriši proizvod?"
+        description={<>Proizvod <strong className="font-black text-slate-700">{productToDelete?.name}</strong> biće trajno obrisan. Ovu radnju nije moguće poništiti.</>}
+        confirmLabel="Obriši proizvod"
+        variant="danger"
+        loading={deletingId !== null}
+        onCancel={() => setProductToDelete(null)}
+        onConfirm={() => productToDelete && deleteProduct(productToDelete)}
+      />
     </div>
   );
 };

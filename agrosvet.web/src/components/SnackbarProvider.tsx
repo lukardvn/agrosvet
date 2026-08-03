@@ -46,16 +46,25 @@ const variantStyles = {
 const SnackbarItem = ({ snackbar, onDismiss }: { snackbar: SnackbarMessage; onDismiss: (id: string) => void }) => {
   const style = variantStyles[snackbar.variant];
   const Icon = style.icon;
+  const [exiting, setExiting] = useState(false);
 
   useEffect(() => {
-    const timeout = window.setTimeout(() => onDismiss(snackbar.id), snackbar.duration ?? 4500);
+    if (exiting) return;
+    const timeout = window.setTimeout(() => setExiting(true), snackbar.duration ?? 4500);
     return () => window.clearTimeout(timeout);
-  }, [onDismiss, snackbar.duration, snackbar.id]);
+  }, [exiting, snackbar.duration]);
+
+  useEffect(() => {
+    if (!exiting) return;
+    const fallback = window.setTimeout(() => onDismiss(snackbar.id), 250);
+    return () => window.clearTimeout(fallback);
+  }, [exiting, onDismiss, snackbar.id]);
 
   return (
     <div
       role={snackbar.variant === 'error' ? 'alert' : 'status'}
-      className={`snackbar-enter pointer-events-auto flex w-full items-start gap-3 rounded-lg border bg-white p-4 shadow-xl shadow-agro-950/10 ${style.borderClass}`}
+      onAnimationEnd={() => exiting && onDismiss(snackbar.id)}
+      className={`${exiting ? 'snackbar-exit' : 'snackbar-enter'} pointer-events-auto flex w-full items-start gap-3 rounded-lg border bg-white p-4 shadow-xl shadow-agro-950/10 ${style.borderClass}`}
     >
       <span className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full ${style.iconClass}`}>
         <Icon size={18} />
@@ -65,9 +74,10 @@ const SnackbarItem = ({ snackbar, onDismiss }: { snackbar: SnackbarMessage; onDi
         <p className="mt-1 text-sm leading-5 text-slate-500">{snackbar.message}</p>
       </div>
       <button
-        onClick={() => onDismiss(snackbar.id)}
+        onClick={() => setExiting(true)}
+        disabled={exiting}
         aria-label="Zatvori obaveštenje"
-        className="rounded p-1 text-slate-300 transition-colors hover:bg-slate-100 hover:text-slate-600"
+        className="rounded p-1 text-slate-300 transition-colors hover:bg-slate-100 hover:text-slate-600 disabled:pointer-events-none"
       >
         <X size={16} />
       </button>

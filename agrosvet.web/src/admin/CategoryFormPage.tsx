@@ -1,10 +1,11 @@
 import { FormEvent, useEffect, useState } from 'react';
-import { ArrowLeft, Check, FolderTree, LoaderCircle } from 'lucide-react';
+import { ArrowLeft, Check, FolderTree, LoaderCircle, Trash2 } from 'lucide-react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { adminApi } from '../services/adminApi';
 import { Category } from '../types';
 import { getDescendantIds, orderCategories } from './categoryTree';
 import { useSnackbar } from '../components/SnackbarProvider';
+import { ConfirmDialog } from '../components/ConfirmDialog';
 
 export const CategoryFormPage = () => {
   const { categoryId } = useParams();
@@ -18,6 +19,8 @@ export const CategoryFormPage = () => {
   const [errors, setErrors] = useState<{ name?: string; parentId?: string }>({});
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [pageError, setPageError] = useState('');
 
   useEffect(() => {
@@ -72,6 +75,23 @@ export const CategoryFormPage = () => {
       snackbar.error(message, { title: 'Kategorija nije sačuvana' });
     } finally {
       setSaving(false);
+    }
+  };
+
+  const handleDelete = async () => {
+    setDeleting(true);
+    setPageError('');
+    try {
+      await adminApi.deleteCategory(parsedCategoryId);
+      snackbar.success('Kategorija je obrisana.');
+      navigate('/admin/categories');
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Kategorija trenutno ne može da se obriše.';
+      setPageError(message);
+      snackbar.error(message, { title: 'Kategorija nije obrisana' });
+    } finally {
+      setDeleting(false);
+      setDeleteDialogOpen(false);
     }
   };
 
@@ -131,15 +151,36 @@ export const CategoryFormPage = () => {
           </div>
         </div>
 
-        <div className="flex flex-col-reverse gap-3 bg-slate-50 px-5 py-4 sm:flex-row sm:justify-end sm:px-8">
+        <div className="flex flex-col gap-3 bg-slate-50 px-5 py-4 sm:flex-row sm:justify-end sm:px-8">
+          {isEditing && (
+            <button
+              type="button"
+              onClick={() => setDeleteDialogOpen(true)}
+              disabled={saving || deleting}
+              className="flex items-center justify-center gap-2 rounded-xl px-5 py-3 text-sm font-black text-red-600 transition hover:bg-red-100 disabled:cursor-not-allowed disabled:opacity-60 sm:mr-auto"
+            >
+              {deleting ? <LoaderCircle className="animate-spin" size={18} /> : <Trash2 size={18} />}
+              {deleting ? 'Brisanje...' : 'Obriši kategoriju'}
+            </button>
+          )}
           <Link to="/admin/categories" className="rounded-xl px-5 py-3 text-center text-sm font-black text-slate-500 transition hover:bg-slate-200">Otkaži</Link>
-          <button disabled={saving} className="flex items-center justify-center gap-2 rounded-xl bg-agro-600 px-6 py-3 text-sm font-black text-white shadow-lg shadow-agro-900/15 transition hover:bg-agro-700 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-60">
+          <button disabled={saving || deleting} className="flex items-center justify-center gap-2 rounded-xl bg-agro-600 px-6 py-3 text-sm font-black text-white shadow-lg shadow-agro-900/15 transition hover:bg-agro-700 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-60">
             {saving ? <LoaderCircle className="animate-spin" size={18} /> : <Check size={18} />}
             {saving ? 'Čuvanje...' : 'Sačuvaj kategoriju'}
           </button>
         </div>
         {pageError && <p className="border-t border-red-100 bg-red-50 p-3 text-center text-sm font-bold text-red-700">{pageError}</p>}
       </form>
+      <ConfirmDialog
+        open={deleteDialogOpen}
+        title="Obriši kategoriju?"
+        description={<>Kategorija <strong className="font-black text-slate-700">{name}</strong> biće trajno obrisana. Ovu radnju nije moguće poništiti.</>}
+        confirmLabel="Obriši kategoriju"
+        variant="danger"
+        loading={deleting}
+        onCancel={() => setDeleteDialogOpen(false)}
+        onConfirm={handleDelete}
+      />
     </div>
   );
 };

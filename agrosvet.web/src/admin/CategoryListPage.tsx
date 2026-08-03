@@ -1,14 +1,20 @@
 import { useEffect, useState } from 'react';
-import { ArrowRight, FolderTree, Plus } from 'lucide-react';
+import { ArrowRight, FolderTree, Plus, Trash2 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { adminApi } from '../services/adminApi';
+import { ApiError } from '../services/apiClient';
 import { Category } from '../types';
+import { ConfirmDialog } from '../components/ConfirmDialog';
+import { useSnackbar } from '../components/SnackbarProvider';
 import { orderCategories } from './categoryTree';
 
 export const CategoryListPage = () => {
+  const snackbar = useSnackbar();
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [deletingId, setDeletingId] = useState<number | null>(null);
+  const [categoryToDelete, setCategoryToDelete] = useState<Category | null>(null);
 
   useEffect(() => {
     adminApi.getCategories()
@@ -16,6 +22,23 @@ export const CategoryListPage = () => {
       .catch(() => setError('Kategorije trenutno ne mogu da se učitaju.'))
       .finally(() => setLoading(false));
   }, []);
+
+  const deleteCategory = async (category: Category) => {
+    setDeletingId(category.id);
+    try {
+      await adminApi.deleteCategory(category.id);
+      setCategories(current => current.filter(item => item.id !== category.id));
+      snackbar.success('Kategorija je obrisana.');
+    } catch (requestError) {
+      const message = requestError instanceof ApiError
+        ? requestError.message
+        : 'Kategorija trenutno ne može da se obriše.';
+      snackbar.error(message, { title: 'Kategorija nije obrisana' });
+    } finally {
+      setDeletingId(null);
+      setCategoryToDelete(null);
+    }
+  };
 
   const categoryNames = new Map(categories.map(category => [category.id, category.name]));
   const childCounts = categories.reduce((counts, category) => {
@@ -55,27 +78,49 @@ export const CategoryListPage = () => {
             {orderCategories(categories).map(({ category, depth }) => {
               const childCount = childCounts.get(category.id) ?? 0;
               return (
-                <Link key={category.id} to={`/admin/categories/${category.id}/edit`} className="group flex items-center gap-3 px-4 py-3 transition-colors hover:bg-agro-50/50 sm:px-5">
-                  <div className="flex min-w-0 flex-1 items-center" style={{ paddingLeft: `${Math.min(depth, 5) * 24}px` }}>
-                    {depth > 0 && <span className="mr-3 h-px w-4 shrink-0 bg-slate-300" />}
-                    <span className={`mr-3 rounded-lg p-2 ${depth === 0 ? 'bg-agro-100 text-agro-700' : 'bg-slate-100 text-slate-500'}`}>
-                      <FolderTree size={17} />
-                    </span>
-                    <div className="min-w-0">
-                      <p className="truncate font-black text-slate-900">{category.name}</p>
-                      <p className="mt-0.5 truncate text-xs font-medium text-slate-400">
-                        {category.parentId === null ? 'Glavna kategorija' : `Roditelj: ${categoryNames.get(category.parentId) ?? 'Nepoznata kategorija'}`}
-                      </p>
+                <div key={category.id} className="group flex items-center transition-colors hover:bg-agro-50/50">
+                  <Link to={`/admin/categories/${category.id}/edit`} className="flex min-w-0 flex-1 items-center gap-3 px-4 py-3 sm:px-5">
+                    <div className="flex min-w-0 flex-1 items-center" style={{ paddingLeft: `${Math.min(depth, 5) * 24}px` }}>
+                      {depth > 0 && <span className="mr-3 h-px w-4 shrink-0 bg-slate-300" />}
+                      <span className={`mr-3 rounded-lg p-2 ${depth === 0 ? 'bg-agro-100 text-agro-700' : 'bg-slate-100 text-slate-500'}`}>
+                        <FolderTree size={17} />
+                      </span>
+                      <div className="min-w-0">
+                        <p className="truncate font-black text-slate-900">{category.name}</p>
+                        <p className="mt-0.5 truncate text-xs font-medium text-slate-400">
+                          {category.parentId === null ? 'Glavna kategorija' : `Roditelj: ${categoryNames.get(category.parentId) ?? 'Nepoznata kategorija'}`}
+                        </p>
+                      </div>
                     </div>
-                  </div>
-                  {childCount > 0 && <span className="hidden rounded-full bg-slate-100 px-2.5 py-1 text-[10px] font-black uppercase tracking-wider text-slate-500 sm:inline">{childCount} podkategorija</span>}
-                  <ArrowRight className="shrink-0 text-slate-300 transition group-hover:text-agro-700" size={18} />
-                </Link>
+                    {childCount > 0 && <span className="hidden rounded-full bg-slate-100 px-2.5 py-1 text-[10px] font-black uppercase tracking-wider text-slate-500 sm:inline">{childCount} podkategorija</span>}
+                    <ArrowRight className="shrink-0 text-slate-300 transition group-hover:text-agro-700" size={18} />
+                  </Link>
+                  <button
+                    type="button"
+                    onClick={() => setCategoryToDelete(category)}
+                    disabled={deletingId !== null}
+                    aria-label={`Obriši kategoriju ${category.name}`}
+                    title="Obriši kategoriju"
+                    className="mr-3 flex h-10 w-10 shrink-0 items-center justify-center rounded-lg text-slate-400 transition hover:bg-red-50 hover:text-red-600 disabled:cursor-not-allowed disabled:opacity-40 sm:mr-4"
+                  >
+                    <Trash2 size={17} />
+                  </button>
+                </div>
               );
             })}
           </div>
         )}
       </section>
+      <ConfirmDialog
+        open={categoryToDelete !== null}
+        title="Obriši kategoriju?"
+        description={<>Kategorija <strong className="font-black text-slate-700">{categoryToDelete?.name}</strong> biće trajno obrisana. Ovu radnju nije moguće poništiti.</>}
+        confirmLabel="Obriši kategoriju"
+        variant="danger"
+        loading={deletingId !== null}
+        onCancel={() => setCategoryToDelete(null)}
+        onConfirm={() => categoryToDelete && deleteCategory(categoryToDelete)}
+      />
     </div>
   );
 };
