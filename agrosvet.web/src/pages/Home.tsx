@@ -23,19 +23,19 @@ export const Home = ({ categories, products, onAddToCart }: HomeProps) => {
 
   return (
     <>
-      <section className="relative left-1/2 right-1/2 -ml-[50vw] -mr-[50vw] w-screen overflow-hidden bg-[#f5f5ef]">
-        <div className="container mx-auto grid min-h-[570px] lg:grid-cols-[0.9fr_1.1fr]">
-          <div className="flex items-center px-4 pb-14 pt-28 sm:px-6 sm:pb-20 sm:pt-32 lg:py-24 lg:pr-14">
-            <div className="max-w-xl">
-              <h1 className="text-4xl font-normal leading-[1.08] tracking-tight text-agro-950 sm:text-5xl lg:text-6xl">
+      <section className="relative left-1/2 right-1/2 -ml-[50vw] -mr-[50vw] w-screen overflow-hidden bg-white">
+        <div className="grid min-h-[680px] lg:h-[min(820px,100vh)] lg:min-h-[680px] lg:grid-cols-[38%_38%_24%]">
+          <div className="flex items-center px-6 pb-16 pt-32 sm:px-10 sm:pb-20 sm:pt-36 lg:px-0 lg:py-24 lg:pl-[7vw] lg:pr-14">
+            <div className="max-w-lg">
+              <h1 className="text-4xl font-normal leading-[1.06] tracking-[-0.045em] text-agro-950 sm:text-5xl lg:text-[3.5rem] xl:text-6xl">
                 Pouzdana rešenja za svaku sezonu.
               </h1>
-              <p className="mt-5 max-w-lg text-sm leading-6 text-slate-600 sm:text-base">
+              <p className="mt-6 max-w-md text-sm leading-6 text-slate-500 sm:text-base">
                 Kvalitetno seme, prihrana, zaštita i oprema za zdrav usev i sigurniji prinos.
               </p>
               <Link
                 to="/proizvodi"
-                className="mt-7 inline-flex items-center gap-3 rounded-[3px] bg-agro-900 px-6 py-3.5 text-xs font-semibold uppercase tracking-[0.16em] text-white transition-colors hover:bg-agro-800"
+                className="mt-8 inline-flex items-center gap-3 rounded-full bg-agro-600 px-7 py-4 text-xs font-semibold uppercase tracking-[0.14em] text-white transition-all hover:bg-agro-700 hover:shadow-lg hover:shadow-agro-900/15 active:scale-[0.98] lg:hidden"
               >
                 Pogledajte ponudu
                 <ArrowRight size={16} />
@@ -43,13 +43,27 @@ export const Home = ({ categories, products, onAddToCart }: HomeProps) => {
             </div>
           </div>
 
-          <div className="relative min-h-[360px] overflow-hidden lg:min-h-full">
+          <div className="relative min-h-[520px] overflow-hidden lg:z-10 lg:min-h-0 lg:overflow-visible">
             <img
-              src="https://images.unsplash.com/photo-1625246333195-78d9c38ad449?auto=format&fit=crop&w=1500&q=90"
-              alt="Poljoprivredna proizvodnja na obrađenom polju"
-              className="absolute inset-0 h-full w-full object-cover"
+              src="/images/agrosvet-bg.jpg"
+              alt="Tamno zeleno lišće kolokazije"
+              className="hero-leaf-image"
             />
-            <div className="absolute inset-y-0 left-0 hidden w-20 bg-gradient-to-r from-[#f5f5ef] to-transparent lg:block" />
+            <img
+              src="/images/agrosvet-bg-cut.png"
+              alt=""
+              className="pointer-events-none absolute inset-y-0 left-0 hidden h-full w-auto max-w-none lg:block"
+            />
+          </div>
+
+          <div className="hidden items-end justify-center bg-white px-4 pb-[12vh] lg:flex xl:px-10">
+            <Link
+              to="/proizvodi"
+              className="relative z-20 inline-flex items-center gap-3 whitespace-nowrap rounded-full bg-agro-600 px-7 py-4 text-xs font-semibold uppercase tracking-[0.14em] text-white transition-all hover:bg-agro-700 hover:shadow-lg hover:shadow-agro-900/15 active:scale-[0.98]"
+            >
+              Pogledajte ponudu
+              <ArrowRight size={16} />
+            </Link>
           </div>
         </div>
       </section>
