@@ -47,11 +47,11 @@ export const Home = ({ categories, products, onAddToCart }: HomeProps) => {
             <img
               src="/images/agrosvet-bg.jpg"
               alt="Tamno zeleno lišće kolokazije"
-              className="hero-leaf-image"
+              className="hero-leaf-image lg:hidden"
             />
             <img
               src="/images/agrosvet-bg-cut.png"
-              alt=""
+              alt="Tamno zeleno lišće kolokazije"
               className="pointer-events-none absolute inset-y-0 left-0 hidden h-full w-auto max-w-none lg:block"
             />
           </div>
