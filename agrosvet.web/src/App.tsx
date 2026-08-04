@@ -254,7 +254,7 @@ const Storefront: React.FC = () => {
 
   return (
     <div className="flex min-h-screen flex-col bg-white font-sans selection:bg-agro-200 selection:text-agro-950">
-        <nav className={`${isHome ? `fixed inset-x-0 top-0 border-b text-agro-950 transition-[background-color,border-color,box-shadow] duration-300 ${headerScrolled ? 'border-slate-900/10 bg-white/80 shadow-sm shadow-slate-950/5 backdrop-blur-xl' : 'border-transparent bg-transparent'}` : 'sticky top-0 border-b border-white/10 bg-agro-900 text-white'} z-50`}>
+        <nav className={`${isHome ? `fixed inset-x-0 top-0 border-b text-agro-950 transition-[background-color,border-color,box-shadow] duration-300 ${headerScrolled ? 'border-slate-900/10 bg-white/80 shadow-sm shadow-slate-950/5 backdrop-blur-xl' : 'border-transparent bg-transparent'}` : 'border-b border-white/10 bg-agro-900 text-white'} z-50`}>
           <div className="container relative mx-auto flex flex-wrap items-center justify-between gap-3 px-4 py-3 sm:flex-nowrap sm:px-6 sm:py-4">
             <Link to="/" className="flex min-w-0 items-center gap-2 sm:gap-3 group cursor-pointer">
               <div className={`shrink-0 rounded-md p-2 transition-colors duration-300 ${isHome ? 'group-hover:bg-white/25' : 'border border-white/20 bg-white/10 group-hover:bg-white/15'}`}>
