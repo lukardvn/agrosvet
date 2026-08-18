@@ -1,4 +1,4 @@
-﻿import React, { useEffect, useState } from 'react';
+﻿import React, { useEffect, useLayoutEffect, useState } from 'react';
 import { Sprout, Search, Phone, MapPin, ChevronDown, Grid2X2, Rows3, SlidersHorizontal } from 'lucide-react';
 import { BrowserRouter as Router, Routes, Route, Link, Navigate, useLocation, useSearchParams } from 'react-router-dom';
 import { ProductCard } from './components/ProductCard';
@@ -25,6 +25,16 @@ import { CategoryListPage } from './admin/CategoryListPage';
 import { CategoryFormPage } from './admin/CategoryFormPage';
 
 type SortOption = 'name-asc' | 'name-desc' | 'price-asc' | 'price-desc' | 'default';
+
+const ScrollToTop = () => {
+  const { pathname } = useLocation();
+
+  useLayoutEffect(() => {
+    window.scrollTo(0, 0);
+  }, [pathname]);
+
+  return null;
+};
 
 const MainShop: React.FC<{ 
   products: any[], 
@@ -360,6 +370,7 @@ const Storefront: React.FC = () => {
 const App: React.FC = () => (
   <SnackbarProvider>
     <Router>
+      <ScrollToTop />
       <Routes>
         <Route path="/admin" element={<AdminLayout />}>
           <Route index element={<Navigate to="products" replace />} />
