@@ -38,7 +38,9 @@ public sealed class R2ImageStorage(IOptions<R2Options> options) : IProductImageS
             Key = storageKey,
             InputStream = stream,
             ContentType = image.ContentType,
-            AutoCloseStream = false
+            AutoCloseStream = false,
+            DisablePayloadSigning = true,
+            DisableDefaultChecksumValidation = true
         }, cancellationToken);
 
         var publicUrl = $"{_options.PublicBaseUrl.TrimEnd('/')}/{storageKey}";
