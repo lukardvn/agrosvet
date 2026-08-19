@@ -74,7 +74,11 @@ const QuantityControl = ({ quantity, onChange }: QuantityControlProps) => {
           aria-label="Količina"
           className="quantity-input h-full w-full bg-transparent px-1 text-center text-sm text-agro-950 outline-none disabled:text-transparent"
         />
-        {saving && <LoaderCircle className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 animate-spin text-agro-700" size={15} />}
+        {saving && (
+          <span className="absolute inset-0 flex items-center justify-center">
+            <LoaderCircle className="animate-spin text-agro-700" size={15} />
+          </span>
+        )}
       </div>
       <button
         type="button"
