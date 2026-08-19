@@ -1,4 +1,5 @@
-import { ImageOff, ShoppingBag, Trash2 } from 'lucide-react';
+import { KeyboardEvent, useEffect, useState } from 'react';
+import { ImageOff, LoaderCircle, Minus, Plus, ShoppingBag, Trash2 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { Cart, Product } from '../../types';
 
@@ -6,9 +7,89 @@ interface UserCartPageProps {
   cart: Cart | null;
   products: Product[];
   onRemoveFromCart: (id: number) => void;
+  onUpdateQuantity: (id: number, quantity: number) => Promise<void>;
 }
 
-export const UserCartPage = ({ cart, products, onRemoveFromCart }: UserCartPageProps) => {
+interface QuantityControlProps {
+  quantity: number;
+  onChange: (quantity: number) => Promise<void>;
+}
+
+const QuantityControl = ({ quantity, onChange }: QuantityControlProps) => {
+  const [value, setValue] = useState(quantity.toString());
+  const [saving, setSaving] = useState(false);
+
+  useEffect(() => setValue(quantity.toString()), [quantity]);
+
+  const commit = async (nextQuantity: number) => {
+    if (!Number.isInteger(nextQuantity) || nextQuantity < 1) {
+      setValue(quantity.toString());
+      return;
+    }
+    if (nextQuantity === quantity) {
+      setValue(quantity.toString());
+      return;
+    }
+
+    setValue(nextQuantity.toString());
+    setSaving(true);
+    try {
+      await onChange(nextQuantity);
+    } catch {
+      setValue(quantity.toString());
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleKeyDown = (event: KeyboardEvent<HTMLInputElement>) => {
+    if (event.key === 'Enter') event.currentTarget.blur();
+    if (event.key === 'Escape') {
+      setValue(quantity.toString());
+      event.currentTarget.blur();
+    }
+  };
+
+  return (
+    <div className="mt-3 flex w-fit items-center rounded-sm border border-agro-950/15 bg-white">
+      <button
+        type="button"
+        onClick={() => commit(quantity - 1)}
+        disabled={saving || quantity <= 1}
+        aria-label="Smanji količinu"
+        className="flex h-9 w-9 items-center justify-center text-agro-950 transition-colors hover:bg-agro-50 disabled:cursor-not-allowed disabled:text-slate-300"
+      >
+        <Minus size={14} />
+      </button>
+      <div className="relative h-9 w-12 border-x border-agro-950/10">
+        <input
+          type="number"
+          min="1"
+          inputMode="numeric"
+          value={value}
+          disabled={saving}
+          onChange={event => setValue(event.target.value)}
+          onBlur={() => commit(Number(value))}
+          onKeyDown={handleKeyDown}
+          aria-label="Količina"
+          className="quantity-input h-full w-full bg-transparent px-1 text-center text-sm text-agro-950 outline-none disabled:text-transparent"
+        />
+        {saving && <LoaderCircle className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 animate-spin text-agro-700" size={15} />}
+      </div>
+      <button
+        type="button"
+        onClick={() => commit(quantity + 1)}
+        disabled={saving}
+        aria-label="Povećaj količinu"
+        className="flex h-9 w-9 items-center justify-center text-agro-950 transition-colors hover:bg-agro-50 disabled:cursor-not-allowed disabled:text-slate-300"
+      >
+        <Plus size={14} />
+      </button>
+    </div>
+  );
+};
+
+export const UserCartPage = ({ cart, products, onRemoveFromCart, onUpdateQuantity }: UserCartPageProps) => {
   if (!cart || cart.items.length === 0) {
     return (
       <div className="border-y border-agro-950/10 py-14 text-center">
@@ -32,7 +113,10 @@ export const UserCartPage = ({ cart, products, onRemoveFromCart }: UserCartPageP
               </Link>
               <div className="min-w-0 flex-1 py-1">
                 <Link to={`/proizvodi/${item.productId}`} className="text-sm font-medium text-agro-950 hover:opacity-60">{item.productName}</Link>
-                <p className="mt-2 text-xs text-slate-500">Količina: {item.quantity}</p>
+                <QuantityControl
+                  quantity={item.quantity}
+                  onChange={quantity => onUpdateQuantity(item.productId, quantity)}
+                />
                 <p className="mt-3 text-base text-agro-950">{(item.price * item.quantity).toLocaleString('sr-RS')} RSD</p>
               </div>
               <button onClick={() => onRemoveFromCart(item.productId)} aria-label={`Ukloni ${item.productName}`} className="self-start p-2 text-slate-300 transition-colors hover:text-red-600">

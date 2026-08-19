@@ -14,10 +14,32 @@ public static class CartEndpoints
 
         group.MapPost("/{cartId}/items", (int cartId, int productId, int quantity, ICartService cartService) =>
         {
+            if (quantity < 1)
+                return Results.ValidationProblem(new Dictionary<string, string[]>
+                {
+                    ["quantity"] = ["Quantity must be at least 1."]
+                });
+
             var cart = cartService.AddItem(cartId, productId, quantity);
             return Results.Ok(cart);
         })
         .WithName("AddItemToCart");
+
+        group.MapPut("/{cartId}/items/{productId}", (
+            int cartId,
+            int productId,
+            int quantity,
+            ICartService cartService) =>
+        {
+            if (quantity < 1)
+                return Results.ValidationProblem(new Dictionary<string, string[]>
+                {
+                    ["quantity"] = ["Quantity must be at least 1."]
+                });
+
+            return Results.Ok(cartService.UpdateItemQuantity(cartId, productId, quantity));
+        })
+        .WithName("UpdateCartItemQuantity");
 
         group.MapDelete("/{cartId}/items/{productId}", (int cartId, int productId, ICartService cartService) =>
         {

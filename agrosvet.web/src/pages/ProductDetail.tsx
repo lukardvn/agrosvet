@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { ImageOff, ShoppingBag } from 'lucide-react';
+import { ImageOff, Minus, Plus, ShoppingBag } from 'lucide-react';
 import { useParams } from 'react-router-dom';
 import { Breadcrumbs } from '../components/Breadcrumbs';
 import { productDetailPreview } from '../mocks/productDetailPreview';
@@ -9,7 +9,7 @@ import { NotFound } from './NotFound';
 interface ProductDetailProps {
   products: Product[];
   categories: Category[];
-  onAddToCart: (id: number) => void;
+  onAddToCart: (id: number, quantity: number) => void;
 }
 
 export const ProductDetail = ({ products, categories, onAddToCart }: ProductDetailProps) => {
@@ -19,6 +19,7 @@ export const ProductDetail = ({ products, categories, onAddToCart }: ProductDeta
   const product = backendProduct
     ?? (products.length === 0 && parsedProductId === productDetailPreview.id ? productDetailPreview : null);
   const [imageFailed, setImageFailed] = useState(false);
+  const [quantity, setQuantity] = useState(1);
 
   useEffect(() => {
     if (!product) return;
@@ -26,6 +27,8 @@ export const ProductDetail = ({ products, categories, onAddToCart }: ProductDeta
     document.title = `${product.name} | Agrosvet`;
     return () => { document.title = previousTitle; };
   }, [product]);
+
+  useEffect(() => setQuantity(1), [parsedProductId]);
 
   if (!product) return <NotFound />;
 
@@ -66,13 +69,46 @@ export const ProductDetail = ({ products, categories, onAddToCart }: ProductDeta
             <p className="mt-6 text-sm leading-7 text-slate-600">{product.description}</p>
           )}
 
-          <button
-            onClick={() => onAddToCart(product.id)}
-            className="mt-8 flex w-full items-center justify-center gap-3 rounded-[3px] bg-agro-900 px-6 py-4 text-xs font-semibold uppercase tracking-[0.14em] text-white transition-colors hover:bg-agro-800 active:bg-agro-950"
-          >
-            <ShoppingBag size={17} />
-            Dodaj u korpu
-          </button>
+          <div className="mt-8 flex gap-3">
+            <div className="flex shrink-0 items-center rounded-[3px] border border-agro-950/15 bg-white">
+              <button
+                type="button"
+                onClick={() => setQuantity(current => Math.max(1, current - 1))}
+                disabled={quantity === 1}
+                aria-label="Smanji količinu"
+                className="flex h-full w-11 items-center justify-center text-agro-950 transition-colors hover:bg-agro-50 disabled:cursor-not-allowed disabled:text-slate-300"
+              >
+                <Minus size={15} />
+              </button>
+              <input
+                type="number"
+                min="1"
+                inputMode="numeric"
+                value={quantity}
+                onChange={event => {
+                  const nextQuantity = event.target.valueAsNumber;
+                  if (Number.isInteger(nextQuantity) && nextQuantity >= 1) setQuantity(nextQuantity);
+                }}
+                aria-label="Količina"
+                className="quantity-input h-full w-12 border-x border-agro-950/10 bg-transparent text-center text-sm text-agro-950 outline-none"
+              />
+              <button
+                type="button"
+                onClick={() => setQuantity(current => current + 1)}
+                aria-label="Povećaj količinu"
+                className="flex h-full w-11 items-center justify-center text-agro-950 transition-colors hover:bg-agro-50"
+              >
+                <Plus size={15} />
+              </button>
+            </div>
+            <button
+              onClick={() => onAddToCart(product.id, quantity)}
+              className="flex min-h-12 flex-1 items-center justify-center gap-3 rounded-[3px] bg-agro-900 px-6 py-4 text-xs font-semibold uppercase tracking-[0.14em] text-white transition-colors hover:bg-agro-800 active:bg-agro-950"
+            >
+              <ShoppingBag size={17} />
+              Dodaj u korpu
+            </button>
+          </div>
         </div>
       </div>
     </section>

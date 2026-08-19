@@ -7,6 +7,7 @@ public interface ICartService
 {
     Cart GetCart(int cartId);
     Cart AddItem(int cartId, int productId, int quantity);
+    Cart UpdateItemQuantity(int cartId, int productId, int quantity);
     Cart RemoveItem(int cartId, int productId);
     void ClearCart(int cartId);
 }
@@ -49,6 +50,18 @@ public class CartService(ICartRepository cartRepository, IProductRepository prod
         if (item != null)
         {
             cart.Items.Remove(item);
+            cartRepository.Update(cart);
+        }
+        return cart;
+    }
+
+    public Cart UpdateItemQuantity(int cartId, int productId, int quantity)
+    {
+        var cart = cartRepository.GetById(cartId);
+        var item = cart.Items.FirstOrDefault(i => i.ProductId == productId);
+        if (item is not null)
+        {
+            item.Quantity = quantity;
             cartRepository.Update(cart);
         }
         return cart;

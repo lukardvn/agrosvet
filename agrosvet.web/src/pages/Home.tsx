@@ -2,15 +2,18 @@ import { ArrowRight, ArrowUpRight } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useState } from 'react';
 import { ProductCard } from '../components/ProductCard';
-import { Category, Product } from '../types';
+import { Cart, Category, Product } from '../types';
 
 interface HomeProps {
   categories: Category[];
   products: Product[];
-  onAddToCart: (id: number) => void;
+  cart: Cart | null;
+  onAddToCart: (id: number) => Promise<boolean>;
+  onUpdateQuantity: (id: number, quantity: number) => Promise<void>;
+  onRemoveFromCart: (id: number) => Promise<boolean>;
 }
 
-export const Home = ({ categories, products, onAddToCart }: HomeProps) => {
+export const Home = ({ categories, products, cart, onAddToCart, onUpdateQuantity, onRemoveFromCart }: HomeProps) => {
   const visibleCategories = categories.filter(category => category.parentId == null).slice(0, 4);
   const [featuredProducts] = useState(() => [...products].sort(() => Math.random() - 0.5).slice(0, 4));
 
@@ -122,7 +125,10 @@ export const Home = ({ categories, products, onAddToCart }: HomeProps) => {
                 key={product.id}
                 product={product}
                 categoryName={categories.find(category => category.id === product.categoryId)?.name}
+                quantity={cart?.items.find(item => item.productId === product.id)?.quantity ?? 0}
                 onAddToCart={onAddToCart}
+                onUpdateQuantity={onUpdateQuantity}
+                onRemoveFromCart={onRemoveFromCart}
               />
             ))}
           </div>

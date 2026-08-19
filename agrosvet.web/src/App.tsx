@@ -23,6 +23,7 @@ import { ProductListPage } from './admin/ProductListPage';
 import { ProductFormPage } from './admin/ProductFormPage';
 import { CategoryListPage } from './admin/CategoryListPage';
 import { CategoryFormPage } from './admin/CategoryFormPage';
+import { Cart } from './types';
 
 type SortOption = 'name-asc' | 'name-desc' | 'price-asc' | 'price-desc' | 'default';
 
@@ -39,10 +40,13 @@ const ScrollToTop = () => {
 const MainShop: React.FC<{ 
   products: any[], 
   categories: any[], 
-  addToCart: (id: number) => void, 
+  cart: Cart | null,
+  addToCart: (id: number) => Promise<boolean>,
+  updateCartQuantity: (id: number, quantity: number) => Promise<void>,
+  removeFromCart: (id: number) => Promise<boolean>,
   searchQuery: string,
   onSearchQueryChange: (query: string) => void
-}> = ({ products, categories, addToCart, searchQuery, onSearchQueryChange }) => {
+}> = ({ products, categories, cart, addToCart, updateCartQuantity, removeFromCart, searchQuery, onSearchQueryChange }) => {
   const [searchParams] = useSearchParams();
   const requestedCategory = searchParams.get('category');
   const [activeCategoryId, setActiveCategoryId] = useState<number | null>(null);
@@ -208,7 +212,10 @@ const MainShop: React.FC<{
                   key={product.id}
                   product={product}
                   categoryName={categories.find(c => c.id === product.categoryId)?.name}
+                  quantity={cart?.items.find(item => item.productId === product.id)?.quantity ?? 0}
                   onAddToCart={addToCart}
+                  onUpdateQuantity={updateCartQuantity}
+                  onRemoveFromCart={removeFromCart}
                   viewMode={viewMode}
                 />
               ))}
@@ -233,7 +240,7 @@ const MainShop: React.FC<{
 };
 
 const Storefront: React.FC = () => {
-  const { products, categories, cart, loading, addToCart, removeFromCart } = useAgroApi();
+  const { products, categories, cart, loading, addToCart, removeFromCart, updateCartQuantity } = useAgroApi();
   const location = useLocation();
   const isHome = location.pathname === '/';
   const [searchQuery, setSearchQuery] = useState('');
@@ -300,12 +307,15 @@ const Storefront: React.FC = () => {
         <main className={`flex-1 ${isHome ? 'py-0' : 'py-4 md:py-5'}`}>
           <div className="container mx-auto px-4 sm:px-6">
             <Routes>
-              <Route path="/" element={<Home categories={categories} products={products} onAddToCart={addToCart} />} />
+              <Route path="/" element={<Home categories={categories} products={products} cart={cart} onAddToCart={addToCart} onUpdateQuantity={updateCartQuantity} onRemoveFromCart={removeFromCart} />} />
               <Route path="/proizvodi" element={
                 <MainShop 
                   products={products} 
                   categories={categories} 
+                  cart={cart}
                   addToCart={addToCart}
+                  updateCartQuantity={updateCartQuantity}
+                  removeFromCart={removeFromCart}
                   searchQuery={searchQuery}
                   onSearchQueryChange={setSearchQuery}
                  />
@@ -318,7 +328,7 @@ const Storefront: React.FC = () => {
               <Route path="/kontakt" element={<Contact />} />
               <Route path="/user" element={<UserLayout />}>
                 <Route index element={<UserInfoPage />} />
-                <Route path="cart" element={<UserCartPage cart={cart} products={products} onRemoveFromCart={removeFromCart} />} />
+                <Route path="cart" element={<UserCartPage cart={cart} products={products} onRemoveFromCart={removeFromCart} onUpdateQuantity={updateCartQuantity} />} />
                 <Route path="orders" element={<UserOrdersPage />} />
               </Route>
               <Route path="*" element={<NotFound />} />

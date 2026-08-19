@@ -36,17 +36,19 @@ export const useAgroApi = () => {
     fetchData();
   }, []);
 
-  const addToCart = async (productId: number) => {
+  const addToCart = async (productId: number, quantity = 1) => {
     try {
       const res = await fetch(
-        `${API_URL}/cart/1/items?cartId=1&productId=${productId}&quantity=1`,
+        `${API_URL}/cart/1/items?productId=${productId}&quantity=${quantity}`,
         { method: "POST" },
       );
       if (!res.ok) throw new Error();
       setCart(await res.json());
       snackbar.success('Proizvod je dodat u korpu.');
+      return true;
     } catch {
       snackbar.error('Proizvod trenutno nije moguće dodati u korpu.');
+      return false;
     }
   };
 
@@ -58,10 +60,24 @@ export const useAgroApi = () => {
       if (!res.ok) throw new Error();
       setCart(await res.json());
       snackbar.info('Proizvod je uklonjen iz korpe.', { title: 'Korpa je ažurirana' });
+      return true;
     } catch {
       snackbar.error('Proizvod trenutno nije moguće ukloniti iz korpe.');
+      return false;
     }
   };
 
-  return { products, categories, cart, loading, addToCart, removeFromCart };
+  const updateCartQuantity = async (productId: number, quantity: number) => {
+    try {
+      const updatedCart = await apiRequest<Cart>(`/cart/1/items/${productId}?quantity=${quantity}`, {
+        method: "PUT",
+      });
+      setCart(updatedCart);
+    } catch (error) {
+      snackbar.error('Količina trenutno ne može da se izmeni.');
+      throw error;
+    }
+  };
+
+  return { products, categories, cart, loading, addToCart, removeFromCart, updateCartQuantity };
 };

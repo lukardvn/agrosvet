@@ -30,6 +30,16 @@
     @apply bg-transparent;
   }
 
+  .quantity-input {
+    -moz-appearance: textfield;
+  }
+
+  .quantity-input::-webkit-inner-spin-button,
+  .quantity-input::-webkit-outer-spin-button {
+    margin: 0;
+    -webkit-appearance: none;
+  }
+
   .glass-header {
     @apply sticky top-0 z-50 bg-white/80 backdrop-blur-xl border-b border-slate-200/60;
   }

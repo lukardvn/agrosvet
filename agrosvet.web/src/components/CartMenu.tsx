@@ -1,5 +1,6 @@
+import { useEffect, useState } from 'react';
 import { ImageOff, ShoppingCart } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import { Cart, Product } from '../types';
 
 interface CartMenuProps {
@@ -8,13 +9,34 @@ interface CartMenuProps {
   dark?: boolean;
 }
 
+const itemNoun = (count: number) => {
+  const lastTwoDigits = count % 100;
+  const lastDigit = count % 10;
+  if (lastDigit === 1 && lastTwoDigits !== 11) return 'artikal';
+  if (lastDigit >= 2 && lastDigit <= 4 && (lastTwoDigits < 12 || lastTwoDigits > 14)) return 'artikla';
+  return 'artikala';
+};
+
 export const CartMenu = ({ cart, products, dark = false }: CartMenuProps) => {
+  const { pathname } = useLocation();
+  const [open, setOpen] = useState(false);
   const itemCount = cart?.items.reduce((total, item) => total + item.quantity, 0) ?? 0;
 
+  useEffect(() => setOpen(false), [pathname]);
+
   return (
-    <div className="group relative">
+    <div
+      className="relative"
+      onMouseEnter={() => setOpen(true)}
+      onMouseLeave={() => setOpen(false)}
+      onFocus={() => setOpen(true)}
+      onBlur={event => {
+        if (!event.currentTarget.contains(event.relatedTarget)) setOpen(false);
+      }}
+    >
       <Link
         to="/user/cart"
+        onClick={() => setOpen(false)}
         aria-label="Korpa"
         className={`flex items-center gap-2 rounded-md border px-3 py-2.5 transition-colors sm:gap-3 sm:px-5 ${dark ? 'border-agro-950/20 bg-white/15 text-agro-950 hover:bg-white/30' : 'border-white/20 bg-white/5 text-white hover:bg-white/10'}`}
       >
@@ -25,11 +47,11 @@ export const CartMenu = ({ cart, products, dark = false }: CartMenuProps) => {
         )}
       </Link>
 
-      <div className="invisible absolute right-0 top-full z-50 w-80 pt-3 opacity-0 transition-all group-hover:visible group-hover:opacity-100 group-focus-within:visible group-focus-within:opacity-100">
+      <div className={`absolute right-0 top-full z-50 w-80 pt-3 transition-all ${open ? 'visible opacity-100' : 'invisible opacity-0'}`}>
         <div className="rounded-md border border-agro-950/10 bg-white p-4 text-agro-950 shadow-xl shadow-agro-950/15">
           <div className="mb-3 flex items-center justify-between border-b border-agro-950/10 pb-3">
             <span className="text-sm font-medium">Korpa</span>
-            <span className="text-xs text-slate-400">{itemCount} artikala</span>
+            <span className="text-xs text-slate-400">{itemCount} {itemNoun(itemCount)}</span>
           </div>
 
           {!cart || cart.items.length === 0 ? (
@@ -63,7 +85,7 @@ export const CartMenu = ({ cart, products, dark = false }: CartMenuProps) => {
               <span className="text-slate-500">Ukupno</span>
               <span className="font-medium">{cart?.totalPrice.toLocaleString('sr-RS') ?? 0} RSD</span>
             </div>
-            <Link to="/user/cart" className="block rounded-[3px] bg-agro-900 px-4 py-3 text-center text-xs font-semibold uppercase tracking-[0.12em] text-white hover:bg-agro-800">
+            <Link to="/user/cart" onClick={() => setOpen(false)} className="block rounded-[3px] bg-agro-900 px-4 py-3 text-center text-xs font-semibold uppercase tracking-[0.12em] text-white hover:bg-agro-800">
               Pogledajte korpu
             </Link>
           </div>
