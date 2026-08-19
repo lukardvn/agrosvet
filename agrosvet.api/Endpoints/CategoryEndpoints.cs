@@ -1,12 +1,22 @@
 using Agrosvet.Api.Contracts;
 using Agrosvet.Api.Models;
 using Agrosvet.Api.Services;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
 namespace Agrosvet.Api.Endpoints;
 
 public static class CategoryEndpoints
 {
+    private const long MaxImageSize = 10 * 1024 * 1024;
+    private static readonly HashSet<string> AllowedImageTypes =
+    [
+        "image/jpeg",
+        "image/png",
+        "image/webp",
+        "image/avif"
+    ];
+
     public static void MapCategoryEndpoints(this IEndpointRouteBuilder app)
     {
         var publicGroup = app.MapGroup("/categories");
@@ -35,43 +45,50 @@ public static class CategoryEndpoints
             Results.Ok(productService.GetActiveProductsByCategory(id).Select(product => product.ToDto())))
         .WithName("GetProductsByCategoryId");
 
-        adminGroup.MapPost("/", (CategoryUpsertRequest request, ICategoryService categoryService) =>
+        adminGroup.MapPost("/", async (
+            [FromForm] CategoryUpsertRequest request,
+            ICategoryService categoryService,
+            CancellationToken cancellationToken) =>
         {
             var errors = Validate(request, null, categoryService);
             if (errors.Count > 0) return Results.ValidationProblem(errors);
 
-            var createdCategory = categoryService.CreateCategory(new Category
-            {
-                Name = request.Name.Trim(),
-                ParentCategoryId = request.ParentId
-            });
+            var createdCategory = await categoryService.CreateCategoryAsync(
+                ToCategory(request),
+                request.Image,
+                cancellationToken);
             return Results.Created($"/categories/{createdCategory.Id}", createdCategory.ToDto());
         })
+        .DisableAntiforgery()
         .WithName("CreateCategory");
 
-        adminGroup.MapPut("/{id}", (int id, CategoryUpsertRequest request, ICategoryService categoryService) =>
+        adminGroup.MapPut("/{id}", async (
+            int id,
+            [FromForm] CategoryUpsertRequest request,
+            ICategoryService categoryService,
+            CancellationToken cancellationToken) =>
         {
-            if (categoryService.GetCategoryById(id) is null) return Results.NotFound();
-
             var errors = Validate(request, id, categoryService);
             if (errors.Count > 0) return Results.ValidationProblem(errors);
 
-            var category = new Category
-            {
-                Id = id,
-                Name = request.Name.Trim(),
-                ParentCategoryId = request.ParentId
-            };
-            categoryService.UpdateCategory(category);
-            return Results.Ok(category.ToDto());
+            var category = await categoryService.UpdateCategoryAsync(
+                id,
+                ToCategory(request),
+                request.Image,
+                cancellationToken);
+            return category is not null ? Results.Ok(category.ToDto()) : Results.NotFound();
         })
+        .DisableAntiforgery()
         .WithName("UpdateCategory");
 
-        adminGroup.MapDelete("/{id}", (int id, ICategoryService categoryService) =>
+        adminGroup.MapDelete("/{id}", async (
+            int id,
+            ICategoryService categoryService,
+            CancellationToken cancellationToken) =>
         {
             try
             {
-                var success = categoryService.DeleteCategory(id);
+                var success = await categoryService.DeleteCategoryAsync(id, cancellationToken);
                 return success
                     ? Results.NoContent()
                     : Results.NotFound();
@@ -86,6 +103,12 @@ public static class CategoryEndpoints
         })
         .WithName("DeleteCategory");
     }
+
+    private static Category ToCategory(CategoryUpsertRequest request) => new()
+    {
+        Name = request.Name.Trim(),
+        ParentCategoryId = request.ParentId
+    };
 
     private static Dictionary<string, string[]> Validate(
         CategoryUpsertRequest request,
@@ -104,6 +127,14 @@ public static class CategoryEndpoints
                 errors["parentId"] = ["Parent category does not exist."];
             else if (categoryId == request.ParentId || CreatesCycle(categoryId, request.ParentId.Value, categoryService))
                 errors["parentId"] = ["A category cannot use itself or one of its descendants as its parent."];
+        }
+
+        if (request.Image is not null)
+        {
+            if (request.Image.Length == 0 || request.Image.Length > MaxImageSize)
+                errors["image"] = ["Image must be between 1 byte and 10 MB."];
+            else if (!AllowedImageTypes.Contains(request.Image.ContentType.ToLowerInvariant()))
+                errors["image"] = ["Image must be JPEG, PNG, WebP, or AVIF."];
         }
 
         return errors;

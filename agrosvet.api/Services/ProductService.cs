@@ -18,7 +18,7 @@ public interface IProductService
 
 public class ProductService(
     IProductRepository productRepository,
-    IProductImageStorage imageStorage,
+    IImageStorage imageStorage,
     ILogger<ProductService> logger) : IProductService
 {
     public IEnumerable<Product> GetAllProducts() => productRepository.GetAll();
@@ -40,7 +40,7 @@ public class ProductService(
         StoredImage? storedImage = null;
         if (image is not null)
         {
-            storedImage = await imageStorage.UploadAsync(image, cancellationToken);
+            storedImage = await imageStorage.UploadAsync(image, "products", cancellationToken);
             product.Image = new ProductImage
             {
                 Url = storedImage.Url,
@@ -75,7 +75,7 @@ public class ProductService(
         var previousStorageKey = existing.Image?.StorageKey;
         if (image is not null)
         {
-            replacement = await imageStorage.UploadAsync(image, cancellationToken);
+            replacement = await imageStorage.UploadAsync(image, "products", cancellationToken);
         }
 
         existing.Name = product.Name;

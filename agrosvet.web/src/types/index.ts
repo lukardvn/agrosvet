@@ -12,6 +12,7 @@ export interface Category {
   id: number;
   name: string;
   parentId: number | null;
+  imageUrl: string;
   description?: string;
 }
 
@@ -22,7 +23,11 @@ export interface ProductSaveInput extends Omit<ProductInput, 'imageUrl'> {
   imageFile?: File;
 }
 
-export type CategoryInput = Omit<Category, 'id'>;
+export interface CategoryInput {
+  name: string;
+  parentId: number | null;
+  imageFile?: File;
+}
 
 export interface CartItem {
   productId: number;

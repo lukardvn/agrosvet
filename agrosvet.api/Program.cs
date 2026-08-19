@@ -48,7 +48,7 @@ builder.Services.AddScoped<ICategoryService, CategoryService>();
 builder.Services.AddScoped<ICartRepository, CartRepository>();
 builder.Services.AddScoped<ICartService, CartService>();
 builder.Services.Configure<R2Options>(builder.Configuration.GetSection("R2"));
-builder.Services.AddSingleton<IProductImageStorage, R2ImageStorage>();
+builder.Services.AddSingleton<IImageStorage, R2ImageStorage>();
 
 var app = builder.Build();
 

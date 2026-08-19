@@ -12,6 +12,12 @@ public class Category
 
     public int? ParentCategoryId { get; set; }
 
+    [MaxLength(500)]
+    public string? ImageUrl { get; set; }
+
+    [MaxLength(500)]
+    public string? ImageStorageKey { get; set; }
+
     // Navigation properties
     public Category? ParentCategory { get; set; }
     public List<Category> Subcategories { get; set; } = new();

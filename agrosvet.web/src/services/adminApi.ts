@@ -12,6 +12,14 @@ const productFormData = (input: ProductSaveInput) => {
   return formData;
 };
 
+const categoryFormData = (input: CategoryInput) => {
+  const formData = new FormData();
+  formData.append('name', input.name);
+  if (input.parentId !== null) formData.append('parentId', input.parentId.toString());
+  if (input.imageFile) formData.append('image', input.imageFile);
+  return formData;
+};
+
 export const adminApi = {
   getProducts: () => apiRequest<Product[]>('/admin/products'),
 
@@ -55,15 +63,13 @@ export const adminApi = {
   createCategory: (input: CategoryInput) =>
     apiRequest<Category>('/admin/categories', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(input),
+      body: categoryFormData(input),
     }),
 
   updateCategory: (id: number, input: CategoryInput) =>
     apiRequest<Category>(`/admin/categories/${id}`, {
       method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(input),
+      body: categoryFormData(input),
     }),
 
   deleteCategory: (id: number) =>

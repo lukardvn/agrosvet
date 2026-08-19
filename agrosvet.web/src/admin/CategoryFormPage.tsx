@@ -1,5 +1,5 @@
 import { FormEvent, useEffect, useState } from 'react';
-import { ArrowLeft, Check, FolderTree, LoaderCircle, Trash2 } from 'lucide-react';
+import { ArrowLeft, Check, FolderTree, ImageOff, LoaderCircle, Trash2, Upload } from 'lucide-react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { adminApi } from '../services/adminApi';
 import { Category } from '../types';
@@ -15,8 +15,11 @@ export const CategoryFormPage = () => {
   const snackbar = useSnackbar();
   const [name, setName] = useState('');
   const [parentId, setParentId] = useState('');
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState('');
+  const [imageFailed, setImageFailed] = useState(false);
   const [categories, setCategories] = useState<Category[]>([]);
-  const [errors, setErrors] = useState<{ name?: string; parentId?: string }>({});
+  const [errors, setErrors] = useState<{ name?: string; parentId?: string; image?: string }>({});
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [deleting, setDeleting] = useState(false);
@@ -38,6 +41,7 @@ export const CategoryFormPage = () => {
         if (category) {
           setName(category.name);
           setParentId(category.parentId?.toString() ?? '');
+          setImagePreview(category.imageUrl);
         }
       })
       .catch(() => setPageError('Podaci za kategoriju ne mogu da se učitaju.'))
@@ -49,9 +53,20 @@ export const CategoryFormPage = () => {
     : new Set<number>();
   const availableParents = orderCategories(categories).filter(({ category }) => !blockedParentIds.has(category.id));
 
+  const handleImageChange = (file: File | undefined) => {
+    if (!file) return;
+    setImageFile(file);
+    setErrors(current => ({ ...current, image: undefined }));
+    setImageFailed(false);
+
+    const reader = new FileReader();
+    reader.onload = () => setImagePreview(String(reader.result));
+    reader.readAsDataURL(file);
+  };
+
   const handleSubmit = async (event: FormEvent) => {
     event.preventDefault();
-    const nextErrors: { name?: string; parentId?: string } = {};
+    const nextErrors: { name?: string; parentId?: string; image?: string } = {};
     const selectedParentId = parentId ? Number(parentId) : null;
 
     if (!name.trim()) nextErrors.name = 'Unesite naziv kategorije.';
@@ -64,7 +79,7 @@ export const CategoryFormPage = () => {
     setSaving(true);
     setPageError('');
     try {
-      const input = { name: name.trim(), parentId: selectedParentId };
+      const input = { name: name.trim(), parentId: selectedParentId, imageFile: imageFile ?? undefined };
       if (isEditing) await adminApi.updateCategory(parsedCategoryId, input);
       else await adminApi.createCategory(input);
       snackbar.success(isEditing ? 'Izmene kategorije su sačuvane.' : 'Nova kategorija je dodata.');
@@ -114,62 +129,87 @@ export const CategoryFormPage = () => {
         <ArrowLeft size={17} /> Nazad na kategorije
       </Link>
 
-      <form onSubmit={handleSubmit} noValidate className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
-        <div className="border-b border-slate-100 p-5 sm:p-8">
-          <div className="mb-7 flex items-start gap-4 rounded-xl bg-agro-50 p-4">
-            <span className="rounded-lg bg-white p-2 text-agro-700 shadow-sm"><FolderTree size={21} /></span>
-            <p className="text-sm leading-relaxed text-agro-900">Izbor roditeljske kategorije određuje gde će se ova kategorija prikazati u strukturi kataloga.</p>
+      <form onSubmit={handleSubmit} noValidate className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_320px]">
+        <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+          <div className="p-5 sm:p-8">
+            <div className="mb-7 flex items-start gap-4 rounded-xl bg-agro-50 p-4">
+              <span className="rounded-lg bg-white p-2 text-agro-700 shadow-sm"><FolderTree size={21} /></span>
+              <p className="text-sm leading-relaxed text-agro-900">Izbor roditeljske kategorije određuje gde će se ova kategorija prikazati u strukturi kataloga.</p>
+            </div>
+
+            <div className="space-y-6">
+              <label className="block text-sm font-black text-slate-700">
+                Naziv kategorije
+                <input
+                  value={name}
+                  onChange={event => { setName(event.target.value); setErrors(current => ({ ...current, name: undefined })); }}
+                  className={inputClass}
+                  autoFocus
+                />
+                {errors.name && <span className="mt-1.5 block text-xs font-bold text-red-600">{errors.name}</span>}
+              </label>
+
+              <label className="block text-sm font-black text-slate-700">
+                Roditeljska kategorija
+                <select
+                  value={parentId}
+                  onChange={event => { setParentId(event.target.value); setErrors(current => ({ ...current, parentId: undefined })); }}
+                  className={inputClass}
+                >
+                  <option value="">Bez roditeljske kategorije</option>
+                  {availableParents.map(({ category, depth }) => (
+                    <option key={category.id} value={category.id}>{`${'- '.repeat(depth)}${category.name}`}</option>
+                  ))}
+                </select>
+                {errors.parentId && <span className="mt-1.5 block text-xs font-bold text-red-600">{errors.parentId}</span>}
+                {isEditing && <span className="mt-2 block text-xs leading-relaxed text-slate-400">Trenutna kategorija i njene podkategorije nisu dostupne kao roditelji.</span>}
+              </label>
+            </div>
           </div>
 
-          <div className="space-y-6">
-            <label className="block text-sm font-black text-slate-700">
-              Naziv kategorije
-              <input
-                value={name}
-                onChange={event => { setName(event.target.value); setErrors(current => ({ ...current, name: undefined })); }}
-                className={inputClass}
-                autoFocus
-              />
-              {errors.name && <span className="mt-1.5 block text-xs font-bold text-red-600">{errors.name}</span>}
-            </label>
-
-            <label className="block text-sm font-black text-slate-700">
-              Roditeljska kategorija
-              <select
-                value={parentId}
-                onChange={event => { setParentId(event.target.value); setErrors(current => ({ ...current, parentId: undefined })); }}
-                className={inputClass}
-              >
-                <option value="">Bez roditeljske kategorije</option>
-                {availableParents.map(({ category, depth }) => (
-                  <option key={category.id} value={category.id}>{`${'- '.repeat(depth)}${category.name}`}</option>
-                ))}
-              </select>
-              {errors.parentId && <span className="mt-1.5 block text-xs font-bold text-red-600">{errors.parentId}</span>}
-              {isEditing && <span className="mt-2 block text-xs leading-relaxed text-slate-400">Trenutna kategorija i njene podkategorije nisu dostupne kao roditelji.</span>}
-            </label>
-          </div>
         </div>
 
-        <div className="flex flex-col gap-3 bg-slate-50 px-5 py-4 sm:flex-row sm:justify-end sm:px-8">
+        <aside className="self-start space-y-5">
+          <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+            <p className="mb-3 text-xs font-black uppercase tracking-wider text-slate-400">Slika kategorije</p>
+            <div className="flex aspect-[4/3] items-center justify-center overflow-hidden rounded-xl bg-agro-100 text-agro-300">
+              {imagePreview && !imageFailed
+                ? <img src={imagePreview} alt="Pregled kategorije" onError={() => setImageFailed(true)} className="h-full w-full object-cover" />
+                : <ImageOff size={42} strokeWidth={1.5} />}
+            </div>
+            {imageFailed && <p className="mt-2 text-xs font-bold text-red-600">Slika nije dostupna.</p>}
+            <label className="mt-3 flex cursor-pointer items-center justify-center gap-2 rounded-xl border border-slate-200 px-4 py-2.5 text-sm font-bold text-slate-600 transition hover:border-agro-300 hover:bg-agro-50 hover:text-agro-700">
+              <Upload size={17} />
+              {imagePreview ? 'Zameni fotografiju' : 'Dodaj fotografiju'}
+              <input
+                type="file"
+                accept="image/jpeg,image/png,image/webp,image/avif"
+                onChange={event => handleImageChange(event.target.files?.[0])}
+                className="sr-only"
+              />
+            </label>
+            {imageFile && <p className="mt-2 truncate text-xs text-slate-400">{imageFile.name}</p>}
+            {errors.image && <p className="mt-2 text-xs font-bold text-red-600">{errors.image}</p>}
+          </div>
+
+          {pageError && <p className="rounded-xl bg-red-50 p-3 text-sm font-bold text-red-700">{pageError}</p>}
+          <button disabled={saving || deleting} className="flex w-full items-center justify-center gap-2 rounded-xl bg-agro-600 px-5 py-3.5 text-sm font-black text-white shadow-lg shadow-agro-900/15 transition hover:bg-agro-700 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-60">
+            {saving ? <LoaderCircle className="animate-spin" size={18} /> : <Check size={18} />}
+            {saving ? 'Čuvanje...' : 'Sačuvaj kategoriju'}
+          </button>
+          <Link to="/admin/categories" className="block w-full rounded-xl px-5 py-3 text-center text-sm font-black text-slate-500 transition hover:bg-slate-200/60">Otkaži</Link>
           {isEditing && (
             <button
               type="button"
               onClick={() => setDeleteDialogOpen(true)}
               disabled={saving || deleting}
-              className="flex items-center justify-center gap-2 rounded-xl px-5 py-3 text-sm font-black text-red-600 transition hover:bg-red-100 disabled:cursor-not-allowed disabled:opacity-60 sm:mr-auto"
+              className="flex w-full items-center justify-center gap-2 rounded-xl px-5 py-3 text-sm font-black text-red-600 transition hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-60"
             >
               {deleting ? <LoaderCircle className="animate-spin" size={18} /> : <Trash2 size={18} />}
               {deleting ? 'Brisanje...' : 'Obriši kategoriju'}
             </button>
           )}
-          <Link to="/admin/categories" className="rounded-xl px-5 py-3 text-center text-sm font-black text-slate-500 transition hover:bg-slate-200">Otkaži</Link>
-          <button disabled={saving || deleting} className="flex items-center justify-center gap-2 rounded-xl bg-agro-600 px-6 py-3 text-sm font-black text-white shadow-lg shadow-agro-900/15 transition hover:bg-agro-700 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-60">
-            {saving ? <LoaderCircle className="animate-spin" size={18} /> : <Check size={18} />}
-            {saving ? 'Čuvanje...' : 'Sačuvaj kategoriju'}
-          </button>
-        </div>
-        {pageError && <p className="border-t border-red-100 bg-red-50 p-3 text-center text-sm font-bold text-red-700">{pageError}</p>}
+        </aside>
       </form>
       <ConfirmDialog
         open={deleteDialogOpen}

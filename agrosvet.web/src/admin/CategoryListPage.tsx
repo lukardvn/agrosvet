@@ -41,10 +41,6 @@ export const CategoryListPage = () => {
   };
 
   const categoryNames = new Map(categories.map(category => [category.id, category.name]));
-  const childCounts = categories.reduce((counts, category) => {
-    if (category.parentId !== null) counts.set(category.parentId, (counts.get(category.parentId) ?? 0) + 1);
-    return counts;
-  }, new Map<number, number>());
 
   return (
     <div className="mx-auto max-w-7xl">
@@ -76,14 +72,21 @@ export const CategoryListPage = () => {
         ) : (
           <div className="divide-y divide-slate-100">
             {orderCategories(categories).map(({ category, depth }) => {
-              const childCount = childCounts.get(category.id) ?? 0;
               return (
                 <div key={category.id} className="group flex items-center transition-colors hover:bg-agro-50/50">
                   <Link to={`/admin/categories/${category.id}/edit`} className="flex min-w-0 flex-1 items-center gap-3 px-4 py-3 sm:px-5">
                     <div className="flex min-w-0 flex-1 items-center" style={{ paddingLeft: `${Math.min(depth, 5) * 24}px` }}>
                       {depth > 0 && <span className="mr-3 h-px w-4 shrink-0 bg-slate-300" />}
-                      <span className={`mr-3 rounded-lg p-2 ${depth === 0 ? 'bg-agro-100 text-agro-700' : 'bg-slate-100 text-slate-500'}`}>
+                      <span className={`relative mr-3 flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-lg ${depth === 0 ? 'bg-agro-100 text-agro-700' : 'bg-slate-100 text-slate-500'}`}>
                         <FolderTree size={17} />
+                        {category.imageUrl && (
+                          <img
+                            src={category.imageUrl}
+                            alt=""
+                            onError={event => { event.currentTarget.style.display = 'none'; }}
+                            className="absolute inset-0 h-full w-full object-cover"
+                          />
+                        )}
                       </span>
                       <div className="min-w-0">
                         <p className="truncate font-black text-slate-900">{category.name}</p>
@@ -92,7 +95,6 @@ export const CategoryListPage = () => {
                         </p>
                       </div>
                     </div>
-                    {childCount > 0 && <span className="hidden rounded-full bg-slate-100 px-2.5 py-1 text-[10px] font-black uppercase tracking-wider text-slate-500 sm:inline">{childCount} podkategorija</span>}
                     <ArrowRight className="shrink-0 text-slate-300 transition group-hover:text-agro-700" size={18} />
                   </Link>
                   <button

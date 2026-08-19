@@ -10,13 +10,6 @@ interface HomeProps {
   onAddToCart: (id: number) => void;
 }
 
-const categoryImages = [
-  'https://images.unsplash.com/photo-1500651230702-0e2d8a49d4ad?auto=format&fit=crop&w=1000&q=85',
-  'https://images.unsplash.com/photo-1625246333195-78d9c38ad449?auto=format&fit=crop&w=1000&q=85',
-  'https://images.unsplash.com/photo-1592982537447-7440770cbfc9?auto=format&fit=crop&w=1000&q=85',
-  'https://images.unsplash.com/photo-1416879595882-3373a0480b5b?auto=format&fit=crop&w=1000&q=85',
-];
-
 export const Home = ({ categories, products, onAddToCart }: HomeProps) => {
   const visibleCategories = categories.filter(category => category.parentId == null).slice(0, 4);
   const [featuredProducts] = useState(() => [...products].sort(() => Math.random() - 0.5).slice(0, 4));
@@ -82,17 +75,20 @@ export const Home = ({ categories, products, onAddToCart }: HomeProps) => {
 
         {visibleCategories.length > 0 ? (
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            {visibleCategories.map((category, index) => (
+            {visibleCategories.map(category => (
               <Link
                 key={category.id}
                 to={`/proizvodi?category=${category.id}`}
                 className="group relative aspect-[4/5] overflow-hidden rounded-md bg-agro-100"
               >
-                <img
-                  src={categoryImages[index % categoryImages.length]}
-                  alt=""
-                  className="absolute inset-0 h-full w-full object-cover transition-transform duration-700 group-hover:scale-[1.035]"
-                />
+                {category.imageUrl && (
+                  <img
+                    src={category.imageUrl}
+                    alt={category.name}
+                    onError={event => { event.currentTarget.style.display = 'none'; }}
+                    className="absolute inset-0 h-full w-full object-cover transition-transform duration-700 group-hover:scale-[1.035]"
+                  />
+                )}
                 <div className="absolute inset-0 bg-gradient-to-t from-agro-950/75 via-transparent to-transparent" />
                 <div className="absolute inset-x-0 bottom-0 flex items-end justify-between gap-4 p-5 text-white">
                   <h3 className="text-xl font-normal">{category.name}</h3>

@@ -6,17 +6,20 @@ namespace Agrosvet.Api.Storage;
 
 public sealed record StoredImage(string Url, string StorageKey);
 
-public interface IProductImageStorage
+public interface IImageStorage
 {
-    Task<StoredImage> UploadAsync(IFormFile image, CancellationToken cancellationToken);
+    Task<StoredImage> UploadAsync(IFormFile image, string folder, CancellationToken cancellationToken);
     Task DeleteAsync(string storageKey, CancellationToken cancellationToken);
 }
 
-public sealed class R2ImageStorage(IOptions<R2Options> options) : IProductImageStorage
+public sealed class R2ImageStorage(IOptions<R2Options> options) : IImageStorage
 {
     private readonly R2Options _options = options.Value;
 
-    public async Task<StoredImage> UploadAsync(IFormFile image, CancellationToken cancellationToken)
+    public async Task<StoredImage> UploadAsync(
+        IFormFile image,
+        string folder,
+        CancellationToken cancellationToken)
     {
         ValidateConfiguration();
 
@@ -28,7 +31,7 @@ public sealed class R2ImageStorage(IOptions<R2Options> options) : IProductImageS
             "image/avif" => ".avif",
             _ => throw new InvalidOperationException("Unsupported image type.")
         };
-        var storageKey = $"products/{Guid.NewGuid():N}{extension}";
+        var storageKey = $"{folder}/{Guid.NewGuid():N}{extension}";
         using var stream = image.OpenReadStream();
         using var client = CreateClient();
 

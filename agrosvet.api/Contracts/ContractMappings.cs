@@ -16,5 +16,6 @@ public static class ContractMappings
     public static CategoryDto ToDto(this Category category) => new(
         category.Id,
         category.Name,
-        category.ParentCategoryId);
+        category.ParentCategoryId,
+        category.ImageUrl ?? string.Empty);
 }
