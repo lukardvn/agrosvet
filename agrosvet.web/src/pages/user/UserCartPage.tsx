@@ -1,5 +1,5 @@
 import { KeyboardEvent, useEffect, useState } from 'react';
-import { ImageOff, LoaderCircle, Minus, Plus, ShoppingBag, Trash2 } from 'lucide-react';
+import { ImageOff, Minus, Plus, ShoppingBag, Sprout, Trash2 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { Cart, Product } from '../../types';
 
@@ -76,7 +76,11 @@ const QuantityControl = ({ quantity, onChange }: QuantityControlProps) => {
         />
         {saving && (
           <span className="absolute inset-0 flex items-center justify-center">
-            <LoaderCircle className="animate-spin text-agro-700" size={15} />
+            <span className="relative block h-4 w-4">
+              <span className="leaf-loader-reveal absolute inset-y-0 left-0 overflow-hidden">
+                <Sprout className="absolute left-0 h-4 w-4 max-w-none text-agro-700" />
+              </span>
+            </span>
           </span>
         )}
       </div>
