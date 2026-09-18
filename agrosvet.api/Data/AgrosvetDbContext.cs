@@ -1,18 +1,41 @@
 using Agrosvet.Api.Models;
+using Microsoft.AspNetCore.DataProtection.EntityFrameworkCore;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 
 namespace Agrosvet.Api.Data;
 
-public class AgrosvetDbContext(DbContextOptions<AgrosvetDbContext> options) : DbContext(options)
+public class AgrosvetDbContext(DbContextOptions<AgrosvetDbContext> options)
+    : IdentityDbContext<ApplicationUser>(options), IDataProtectionKeyContext
 {
     public DbSet<Category> Categories => Set<Category>();
     public DbSet<Product> Products => Set<Product>();
     public DbSet<ProductImage> ProductImages => Set<ProductImage>();
     public DbSet<Cart> Carts => Set<Cart>();
     public DbSet<CartItem> CartItems => Set<CartItem>();
+    public DbSet<DataProtectionKey> DataProtectionKeys => Set<DataProtectionKey>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
+        base.OnModelCreating(modelBuilder);
+
+        modelBuilder.Entity<IdentityRole>().HasData(
+            new IdentityRole
+            {
+                Id = AppRoles.UserId,
+                Name = AppRoles.User,
+                NormalizedName = AppRoles.User.ToUpperInvariant(),
+                ConcurrencyStamp = AppRoles.UserId
+            },
+            new IdentityRole
+            {
+                Id = AppRoles.AdminId,
+                Name = AppRoles.Admin,
+                NormalizedName = AppRoles.Admin.ToUpperInvariant(),
+                ConcurrencyStamp = AppRoles.AdminId
+            });
+
         // Category self-referencing relationship
         modelBuilder.Entity<Category>(entity =>
         {
